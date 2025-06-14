@@ -1,0 +1,23 @@
+// About.js
+import React from 'react';
+import '../css/pages.css';
+
+export default function About() {
+  return (
+    
+    <div className='page-container'>
+      <div className="page about">
+      <h1>About DataScraper</h1>
+      <p>
+        DataScraper is a modern web scraping platform that lets users automatically gather and analyze website data in real time. 
+        Whether you're a researcher, business analyst, or developer, our tool simplifies data collection across the web.
+      </p>
+      <p>
+        Our mission is to make data accessible and useful to everyone. Built with security, simplicity, and scalability in mind,
+        our app ensures a seamless experience for both users and administrators.
+      </p>
+    </div>
+    </div>
+  );
+}
+

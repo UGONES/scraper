@@ -1,0 +1,96 @@
+/* General Page Layout */
+.page-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  background-color: #fff;
+}
+
+/* Headings */
+.page-container h1,
+.page-container h2,
+.page-container h3 {
+  margin-bottom: 1rem;
+  color: #1e1e2f;
+}
+
+/* Paragraphs */
+.page-container p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* Buttons */
+.page-button {
+  background-color: #007bff;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+.page-button:hover {
+  background-color: #0056b3;
+}
+
+/* Cards */
+.card {
+  background: #f9f9f9;
+  padding: 1.2rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Links */
+a.page-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a.page-link:hover {
+  text-decoration: underline;
+}
+/* Auth form styles */
+.auth-form {
+  max-width: 380px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #f4f5f7;
+  border-radius: 8px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+}
+
+.auth-form h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+}
+
+.auth-form .page-button {
+  width: 100%;
+  padding: 0.9rem;
+  font-size: 1.05rem;
+  font-weight: bold;
+  border-radius: 6px;
+}

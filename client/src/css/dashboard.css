@@ -1,0 +1,135 @@
+/* Layout */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8f9fa;
+}
+
+.dashboard-sidebar {
+  width: 220px;
+  background: #343a40;
+  color: white;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+}
+
+.dashboard-sidebar h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.dashboard-sidebar li {
+  margin: 15px 0;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.dashboard-sidebar li:hover {
+  color: #ffc107;
+}
+
+/* Main section */
+.dashboard-main {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* Header */
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.dashboard-header p {
+  color: #6c757d;
+}
+
+/* Stats */
+.dashboard-stats {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.stat-card {
+  background: white;
+  flex: 1;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.stat-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Notifications */
+.dashboard-notifications ul li a {
+  background: #fff;
+  border-radius: 6px;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  list-style: none;
+  margin-bottom: 2rem;
+}
+
+.dashboard-notifications li {
+  margin: 0.5rem 0;
+}
+
+/* Table */
+.dashboard-table table {
+  width: 100%;
+  background: #fff;
+  border-collapse: collapse;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.dashboard-table th, .dashboard-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.dashboard-table .status {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.status.success {
+  color: green;
+}
+
+.status.pending {
+  color: orange;
+}
+
+.status.failed {
+  color: red;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .dashboard-stats {
+    flex-direction: column;
+  }
+}
