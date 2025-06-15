@@ -1,0 +1,72 @@
+/* Container for profile page */
+.profile-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Profile card */
+.profile-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+/* Profile avatar (default state) */
+.profile-avatar {
+  width: 5rem;
+  height: 5rem;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #007bff;
+  transition: all 0.3s ease;
+}
+
+/* When scrolling - sticky avatar on top-left corner */
+.profile-avatar.sticky {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 30px;
+  z-index: 1000;
+}
+
+/* Upload container */
+.profile-photo-upload {
+  position: static;
+  display: inline-block;
+  cursor: pointer;
+  
+}
+
+/* Label that wraps the input and avatar */
+.upload-label {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* Overlay text on avatar */
+.upload-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.3rem;
+  background-color: #007bffb6;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 1000%;
+  border-radius: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+
+/* Show overlay on hover */
+.upload-label:hover  {
+  opacity: 1;
+}

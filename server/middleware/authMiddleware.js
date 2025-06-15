@@ -1,9 +1,8 @@
 import jwt from 'jsonwebtoken';
 
-// Middleware to verify JWT and attach user to request
-export const auth = (req, res, next) => {
-  const authHeader = req.header('Authorization');
-  const token = authHeader?.split(' ')[1];
+export const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
   if (!token) {
     return res.status(401).json({ message: 'Access denied: No token provided' });
@@ -11,14 +10,13 @@ export const auth = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { userId, role }
+    req.user = decoded; // { userId, role, email }
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
 
-// Middleware to allow only admin users
 export const isAdmin = (req, res, next) => {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied: Admins only' });
@@ -26,4 +24,9 @@ export const isAdmin = (req, res, next) => {
   next();
 };
 
-export default { auth, isAdmin };
+export const isUser = (req, res, next) => {
+  if (req.user?.role !== 'user') {
+    return res.status(403).json({ message: 'Access denied: Users only' });
+  }
+  next();
+};

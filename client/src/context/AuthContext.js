@@ -34,14 +34,23 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const login = (jwt) => {
-    setToken(jwt);
-    localStorage.setItem('token', jwt); 
-  };
+ const login = (jwt, navigate) => {
+  const decoded = decodeToken(jwt);
+  setUser(decoded);
+  setToken(jwt);
+  localStorage.setItem('token', jwt);
 
-  const logout = () => {
-    setToken('');
-  };
+  if (decoded && navigate) {
+    const role = decoded.role;
+    navigate(role === 'admin' ? '/admin/dashboard' : '/dashboard/user');
+  }
+};
+
+ const logout = () => {
+  setToken('');
+  setUser(null);
+  localStorage.removeItem('token');
+};
 
   return (
 <AuthContext.Provider

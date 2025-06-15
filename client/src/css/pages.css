@@ -24,18 +24,25 @@
 
 /* Buttons */
 .page-button {
+  display: inline-block;
   background-color: #007bff;
   color: white;
-  padding: 0.6rem 1.2rem;
+  padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.25s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
 }
 
 .page-button:hover {
-  background-color: #0056b3;
+  background-color: #7fbcfd;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px #007bff4d;
 }
 
 /* Cards */
@@ -45,6 +52,10 @@
   margin: 1rem 0;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card p {
+  margin: 0;
 }
 
 /* Links */
@@ -57,6 +68,7 @@ a.page-link {
 a.page-link:hover {
   text-decoration: underline;
 }
+
 /* Auth form styles */
 .auth-form {
   max-width: 380px;

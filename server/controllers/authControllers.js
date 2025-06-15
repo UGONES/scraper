@@ -1,9 +1,8 @@
-// server/controllers/authControllers.js
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-export async function register(req, res) {
+export const register = async (req, res) => {
   const { username, email, password, role } = req.body;
 
   try {
@@ -13,6 +12,7 @@ export async function register(req, res) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = await User.create({
       username,
       email,
@@ -20,14 +20,22 @@ export async function register(req, res) {
       role: ['admin', 'user'].includes(role) ? role : 'user',
     });
 
-    res.status(201).json({ message: 'User registered', user: newUser });
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,
+      },
+    });
   } catch (err) {
     console.error('Register error:', err.message);
     res.status(500).json({ message: 'Error registering user' });
   }
-}
+};
 
-export async function login(req, res) {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -42,7 +50,11 @@ export async function login(req, res) {
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role, email:user.email },
+      {
+        userId: user._id,
+        role: user.role,
+        email: user.email,
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -58,4 +70,4 @@ export async function login(req, res) {
     console.error('Login error:', err.message);
     res.status(500).json({ message: 'Login error' });
   }
-}
+};

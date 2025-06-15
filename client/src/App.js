@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -8,9 +9,13 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import AdminDashboard from './dashboards/adminDashboard';
 import UserDashboard from './dashboards/userDashboard';
+import ManageUsers from './pages/Admin/ManageUsers';
+import MyScrapes from './pages/Dashboard/MyScrapes';
+import Profile from './pages/Dashboard/Profile';
 import ProtectedRoute from './ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Footer from './components/Footer';
+import Contact from './pages/Contact';
 import './App.css';
 
 // This should eventually be replaced with live data
@@ -24,6 +29,7 @@ function DashboardRouter() {
   return user.role === 'admin' ? <AdminDashboard /> : <UserDashboard />;
 }
 
+
 function App() {
   const [query, setQuery] = useState('');
 
@@ -35,16 +41,24 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard/user" element={<UserDashboard />} />
+          <Route path="/dashboard/scrapes" element={<MyScrapes />} />
+          <Route path="/dashboard/profile" element={<Profile />} />
+
           <Route
-            path="/dashboard"
+            path="/admin/dashboard"
             element={
               <ProtectedRoute>
                 <DashboardRouter />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route path="admin/users" element={<ManageUsers />} />
+          </Route>
         </Routes>
         <Footer />
       </Router>

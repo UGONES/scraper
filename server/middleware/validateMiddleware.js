@@ -1,17 +1,33 @@
-import { validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 
-// Middleware to validate express-validator results
-const validate = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      message: 'Validation failed',
-      errors: errors.array(),
-    });
+// User registration validation
+export const validateRegister = [
+  body('username')
+    .notEmpty().withMessage('Username is required')
+    .isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+  body('email')
+    .isEmail().withMessage('Valid email is required'),
+  body('password')
+    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
   }
+];
 
-  next();
-};
-
-export default validate;
+// Scrape input validation
+export const validateScrapeInput = [
+  body('url')
+    .notEmpty().withMessage('URL is required')
+    .isURL().withMessage('Must be a valid URL'),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if(!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+];

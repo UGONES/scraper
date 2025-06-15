@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import ScrapedData from '../models/ScrapedData.js';
 
-export const scrape = async (req, res) => {
+async function startScrape(req, res) {
   try {
     const url = req.query.url || req.body.url;
 
@@ -34,3 +34,4 @@ export const scrape = async (req, res) => {
     res.status(500).json({ message: 'Scraping failed', error: err.message });
   }
 };
+export {startScrape};

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../css/dashboard.css';
-import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -12,26 +11,32 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("Admin token:", token);
+
+    let isMounted = true; // prevent state update if unmounted
+
     const fetchUsers = async () => {
       try {
-        const res = await axios.get('/admin/dashboard', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const res = await axios('/admin/dashboard', {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setUsers(res.data);
+        if (isMounted) setUsers(res.data);
       } catch (err) {
         console.error('Admin fetch error:', err.response?.data || err.message);
-        if (err.response?.status === 401 || err.response?.status === 403) {
+        if ([401, 403].includes(err.response?.status)) {
           logout();
           navigate('/signin');
         }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchUsers();
+
+    return () => {
+      isMounted = false;
+    };
   }, [token, logout, navigate]);
 
   if (loading) return <div className="dashboard-loading">Loading admin dashboard...</div>;
@@ -43,8 +48,11 @@ const AdminDashboard = () => {
         <h2>Admin Panel</h2>
         <nav>
           <ul>
-            <li><a href="/admin/dashboard">Dashboard</a></li>
-            <li><Link to="/admin/users">Manage Users</Link></li>            <li><button onClick={logout} className="logout-btn">Logout</button></li>
+            <li><a href="/admin/dashboard">My Dashboard</a></li>
+            <li><a href="/dashboard/profile">Profile</a></li>
+            <li><Link to="/admin/users">Manage Users</Link></li>
+            <li><a href="/dashboard/scrapes">My Scrapes</a></li>
+            <li><button onClick={logout} className="logout-btn">Logout</button></li>
           </ul>
         </nav>
       </aside>

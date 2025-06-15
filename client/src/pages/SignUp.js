@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from '../api/axios'; // Assumes baseURL is set to your backend
+import axios from '../api/axios'; // Assumes baseURL is configured
 import { useNavigate } from 'react-router-dom';
 import '../css/auth.css';
 
@@ -14,10 +14,7 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // ✅ Updated endpoint to match backend
       await axios.post('/auth/register', form);
-
-      // ✅ Redirect to login after successful registration
       navigate('/signin');
     } catch (err) {
       console.error('Signup error:', err);
@@ -26,33 +23,55 @@ const SignUp = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Sign Up</h2>
-      <input
-        name="username"
-        placeholder="Username"
-        value={form.username}
-        onChange={handleChange}
-        required
-      />
-      <input
-        name="email"
-        type="email"
-        placeholder="example@gmail.com"
-        value={form.email}
-        onChange={handleChange}
-        required
-      />
-      <input
-        name="password"
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={handleChange}
-        required
-      />
-      <button type="submit">Sign Up</button>
-    </form>
+    <div className="auth-container">
+      <form onSubmit={handleSubmit} className="auth-form">
+        <h2>Sign Up</h2>
+
+        <div className="auth-group">
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            placeholder="Username"
+            value={form.username}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="auth-group">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="example@gmail.com"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="auth-group">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button type="submit" className="auth-btn">Sign Up</button>
+
+        <div className="auth-footer">
+          Already have an account? <a href="/signin">Sign In</a>
+        </div>
+      </form>
+    </div>
   );
 };
 

@@ -11,7 +11,7 @@ const UserDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('/user/dashboard')
+    axios.get('/dashboard')
       .then((res) => setUserData(res.data))
       .catch((err) => {
         if (err.response?.status === 401 || err.response?.status === 403) {
@@ -35,8 +35,8 @@ const UserDashboard = () => {
         <nav>
           <ul>
             <li><a href="/dashboard">My Dashboard</a></li>
-            <li><a href="/dashboard/scrapes">My Scrapes</a></li>
             <li><a href="/dashboard/profile">Profile</a></li>
+            <li><a href="/dashboard/scrapes">My Scrapes</a></li>
             <li><button onClick={logout} className="logout-btn">Logout</button></li>
           </ul>
         </nav>
