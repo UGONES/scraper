@@ -44,11 +44,8 @@ const Navbar = ({ query, setQuery, items = [] }) => {
             <button className="logout-btn" onClick={handleLogout}>Logout</button>
           ) : (
             <>
-              <Link to="/signin" title="Sign In">
-                <i className="fas fa-sign-in-alt fa-lg" style={{ color: '#61dafb' }}></i>
-              </Link>
-              <Link to="/signup" title="Sign Up">
-                <i className="fas fa-user-plus fa-lg" style={{ color: '#61dafb' }}></i>
+              <Link to="/signup">
+                <i className="fas fa-user-circle fa-lg" style={{ color: '#61dafb' }}></i>
               </Link>
             </>
           )}
