@@ -1,8 +1,12 @@
+// middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
 
+// General JWT verification middleware
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization || req.headers.Authorization;
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const token = authHeader && authHeader.startsWith('Bearer ')
+    ? authHeader.split(' ')[1]
+    : null;
 
   if (!token) {
     return res.status(401).json({ message: 'Access denied: No token provided' });
@@ -17,6 +21,7 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
+// Allow only admin
 export const isAdmin = (req, res, next) => {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied: Admins only' });
@@ -24,6 +29,7 @@ export const isAdmin = (req, res, next) => {
   next();
 };
 
+// Allow only regular user
 export const isUser = (req, res, next) => {
   if (req.user?.role !== 'user') {
     return res.status(403).json({ message: 'Access denied: Users only' });

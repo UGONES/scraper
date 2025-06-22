@@ -1,44 +1,29 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import apiRoutes from './routes/api.js';
+import { Router } from 'express';
+import { register, login } from '../controllers/authControllers.js';
+import { body } from 'express-validator';
+import { validateRegister } from '../middleware/validateMiddleware.js';
 
-dotenv.config();
+const router = Router();
 
-const app = express();
+router.post(
+  '/register',
+  [
+    body('username').notEmpty().withMessage('Username is required'),
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('password').isLength({ min: 4 }).withMessage('Password must be at least 4 characters')
+  ],
+  validateRegister,
+  register
+);
 
-app.use(cors());
-app.use(express.json());
+router.post(
+  '/login',
+  [
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('password').notEmpty().withMessage('Password is required')
+  ],
+  validateRegister,
+  login
+);
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected'))
-.catch((err) => console.error('MongoDB connection error:', err));
-
-app.use('/api', apiRoutes);
-
-// Basic route
-app.get('/', (req, res) => {
-  res.send('Hello from the backend!');
-});
-
-// Sample POST route
-app.post('/api/data', (req, res) => {
-  console.log(req.body); // Data sent from frontend
-  res.json({ message: 'Data received', yourData: req.body });
-});
-
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Optional: clean up and shutdown gracefully
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+export default router;

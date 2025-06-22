@@ -19,7 +19,8 @@ export default function Contact() {
 
   return (
     <div className="auth-container">
-      <h2 className="auth-title">Contact Us</h2>
+      <h2 className="auth-title">Contact Us:</h2>
+      <p className="auth-description">We'd love to hear from you! Please fill out the form below.</p>
       {submitted && <p className="message success">Thanks for reaching out! We'll get back to you soon.</p>}
 
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
