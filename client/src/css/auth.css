@@ -92,3 +92,41 @@
   margin-bottom: 1rem;
   text-align: center;
 }
+
+.carousel {
+  max-width: 100%;
+  margin: 2rem auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 15px #00000026;
+}
+
+.carousel-inner {
+  max-height: 100vh;
+}
+
+.carousel-img {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  object-position: center;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: #00000080;
+  border-radius: 50%;
+  padding: 15px;
+}
+
+.carousel-indicators [data-bs-target] {
+  background-color: #193e87;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.auth-container {
+  position: relative;
+  z-index: 2;
+}

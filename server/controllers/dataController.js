@@ -20,7 +20,7 @@ export const createData = async (req, res) => {
 
     res.status(201).json({ message: 'Data saved', data });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to save data', error: err.message });
+    res.status(500).json({ message: 'Failed to save data' });
   }
 };
 
@@ -35,7 +35,7 @@ export const getProtected = async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch data', error: err.message });
+    res.status(500).json({ message: 'Failed to fetch data' });
   }
 };
 
@@ -44,7 +44,7 @@ export const getUserScrapes = async (req, res) => {
     const userScrapes = await ScrapedData.find({ userId: req.user.userId }).sort({ createdAt: -1 });
     res.json(userScrapes);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch user-specific scrapes', error: err.message });
+    res.status(500).json({ message: 'Failed to fetch user-specific scrapes' });
   }
 };
 
@@ -106,7 +106,7 @@ export const updateScrapeAdmin = async (req, res) => {
     if (err.name === 'CastError') {
       return res.status(400).json({ message: 'Invalid scraped data ID format' });
     }
-    res.status(500).json({ message: 'Server error updating scraped data', error: err.message });
+    res.status(500).json({ message: 'Server error updating scraped data' });
   }
 };
 
@@ -126,6 +126,6 @@ export const deleteScrapeAdmin = async (req, res) => {
     if (err.name === 'CastError') {
       return res.status(400).json({ message: 'Invalid scraped data ID format' });
     }
-    res.status(500).json({ message: 'Server error deleting scraped data', error: err.message });
+    res.status(500).json({ message: 'Server error deleting scraped data' });
   }
 };

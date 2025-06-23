@@ -6,6 +6,7 @@ import scrapeRoutes from './scrapeRoutes.js';
 import adminDashboardRoutes from './adminDashboardRoutes.js';
 import userDashboardRoutes from './userDashboardRoutes.js';
 import userRoutes from './userRoutes.js';
+import contactRoutes from './contactRoutes.js';
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.use('/scrape', scrapeRoutes);
 router.use('/admin/dashboard', adminDashboardRoutes);
 router.use('/user/dashboard', userDashboardRoutes);
 router.use('/users', userRoutes);
+router.use('/contact', contactRoutes);
 
 export default router;

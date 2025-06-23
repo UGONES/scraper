@@ -5,6 +5,7 @@ import '../css/auth.css';
 
 const SignUp = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [formError, setFormError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -13,17 +14,18 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
     try {
       await axios.post('/auth/register', form);
       navigate('/signin');
     } catch (err) {
-      console.error('Signup error:', err);
-      alert(err.response?.data?.message || 'Signup failed');
+      setFormError(err.response?.data?.message || 'Signup failed');
     }
   };
 
   return (
     <div className="auth-container">
+      {formError && <div className="form-error">{formError}</div>}
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Sign Up</h2>
 
