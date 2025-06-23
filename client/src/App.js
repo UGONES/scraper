@@ -44,20 +44,21 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard/admin" element={<AdminDashboard />} />
-          <Route path="/dashboard/user" element={<UserDashboard />} />
+          <Route path="/dashboard/user" element={
+            <ProtectedRoute>
+              <UserDashboard />
+            </ProtectedRoute>
+          } />
           <Route path="/dashboard/scrapes" element={<MyScrapes />} />
           <Route path="/dashboard/profile" element={<Profile />} />
 
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardRouter />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="admin/users" element={<ManageUsers />} />
+          {/* Single protected admin dashboard route with nested users */}
+          <Route path="/dashboard/admin" element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }>
+            <Route path="users" element={<ManageUsers />} />
           </Route>
         </Routes>
         <Footer />

@@ -38,7 +38,7 @@ export const scrapeAndSave = async (req, res) => {
     });
   } catch (err) {
     console.error('Scraping error:', err.message);
-    res.status(500).json({ message: 'Scraping failed', error: err.message });
+    res.status(500).json({ message: 'Scraping failed' });
   }
 };
 

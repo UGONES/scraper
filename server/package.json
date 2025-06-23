@@ -1,14 +1,18 @@
 {
   "name": "server",
+  "private": true,
   "version": "1.0.0",
-  "main": "server.js",
+  "repository": {
+  "type": "module",
+    "main": "server.js",
+    "url": ""
+  },
   "scripts": {
     "dev": "nodemon src/index.js server.js",
     "start": "node dist/index.js",
     "build": "tsc",
     "test": "echo \"No tests yet\" && exit 0"
   },
-  "type": "module",
   "dependencies": {
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",

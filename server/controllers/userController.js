@@ -34,7 +34,7 @@ export const updateUser = async (req, res) => {
 
     res.json(updatedUser);
   } catch (err) {
-    res.status(500).json({ message: 'Error updating user', error: err.message });
+    res.status(500).json({ message: 'Error updating user' });
   }
 };
 
@@ -49,7 +49,7 @@ export const deleteUser = async (req, res) => {
 
     res.json({ message: 'User deleted successfully' });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting user', error: err.message });
+    res.status(500).json({ message: 'Error deleting user' });
   }
 };
 

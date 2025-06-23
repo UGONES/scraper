@@ -1,27 +1,38 @@
 // src/pages/Contact.js (or components/Contact.js if you keep it there)
 import { useState } from 'react';
+import axios from '../api/axios';
 import '../css/auth.css';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    console.log('Contact form submitted:', form);
-    setSubmitted(true);
-    setForm({ name: '', email: '', message: '' });
+    setFormError('');
+    setSuccessMsg('');
+    try {
+      const res = await axios.post('/contact', form);
+      setSuccessMsg(res.data.message || 'Thanks for reaching out! We\'ll get back to you soon.');
+      setSubmitted(true);
+      setForm({ name: '', email: '', message: '' });
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Failed to send message. Please try again.');
+    }
   };
 
   return (
     <div className="auth-container">
       <h2 className="auth-title">Contact Us:</h2>
       <p className="auth-description">We'd love to hear from you! Please fill out the form below.</p>
-      {submitted && <p className="message success">Thanks for reaching out! We'll get back to you soon.</p>}
+      {formError && <div className="form-error">{formError}</div>}
+      {successMsg && <p className="message success">{successMsg}</p>}
 
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
         <label className="auth-label">

@@ -42,7 +42,8 @@ export const AuthProvider = ({ children }) => {
 
   if (decoded && navigate) {
     const role = decoded.role;
-    navigate(role === 'admin' ? '/admin/dashboard' : '/dashboard/user');
+    // Consistent dashboard route
+    navigate(role === 'admin' ? '/dashboard/admin' : '/dashboard/user');
   }
 };
 
