@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../css/auth.css';
 
 const SignUp = () => {
-  const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [form, setForm] = useState({ fullName: '', username: '', email: '', password: '' });
   const [formError, setFormError] = useState('');
   const navigate = useNavigate();
 
@@ -16,7 +16,13 @@ const SignUp = () => {
     e.preventDefault();
     setFormError('');
     try {
-      await axios.post('/auth/register', form);
+      await axios.post('/auth/register', {
+        fullName: form.fullName,
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      });
       navigate('/signin');
     } catch (err) {
       setFormError(err.response?.data?.message || 'Signup failed');
@@ -29,6 +35,17 @@ const SignUp = () => {
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Sign Up</h2>
 
+        <div className="auth-group">
+          <label htmlFor="fullName">Full Name</label>
+          <input
+            type="text"
+            name="fullName"
+            placeholder="Full Name"
+            value={form.fullName}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <div className="auth-group">
           <label htmlFor="username">Username</label>
           <input

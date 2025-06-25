@@ -16,6 +16,8 @@ import ProtectedRoute from './ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Footer from './components/Footer';
 import Contact from './pages/Contact';
+import './css/root.css';
+import './css/responsive.css';
 import './App.css';
 
 // This should eventually be replaced with live data
@@ -44,7 +46,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard/user" element={
+          <Route path="/user/dashboard" element={
             <ProtectedRoute>
               <UserDashboard />
             </ProtectedRoute>
@@ -53,13 +55,14 @@ function App() {
           <Route path="/dashboard/profile" element={<Profile />} />
 
           {/* Single protected admin dashboard route with nested users */}
-          <Route path="/dashboard/admin" element={
+          <Route path="/admin/dashboard" element={
             <ProtectedRoute>
               <AdminDashboard />
             </ProtectedRoute>
           }>
-            <Route path="users" element={<ManageUsers />} />
           </Route>
+          <Route path="/admin/users" element={<ManageUsers />} />
+
         </Routes>
         <Footer />
       </Router>

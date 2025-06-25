@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'; // ✅ Correct
+import { jwtDecode } from 'jwt-decode';
 
-// Helper to decode token
 const decodeToken = (token) => {
   try {
     return jwtDecode(token);
@@ -11,17 +10,14 @@ const decodeToken = (token) => {
   }
 };
 
-// Create AuthContext
 const AuthContext = createContext(null);
 
-// AuthProvider component
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('token') || '');
- const [user, setUser] = useState(() => {
-  const t = localStorage.getItem('token');
-  return t ? decodeToken(t) : null;
-});
-
+  const [user, setUser] = useState(() => {
+    const t = localStorage.getItem('token');
+    return t ? decodeToken(t) : null;
+  });
 
   useEffect(() => {
     if (token) {
@@ -34,41 +30,38 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
- const login = (jwt, navigate) => {
-  const decoded = decodeToken(jwt);
-  setUser(decoded);
-  setToken(jwt);
-  localStorage.setItem('token', jwt);
+  const login = (jwt, payload, navigate) => {
+    setUser(payload);
+    setToken(jwt);
+    localStorage.setItem('token', jwt);
 
-  if (decoded && navigate) {
-    const role = decoded.role;
-    // Consistent dashboard route
-    navigate(role === 'admin' ? '/dashboard/admin' : '/dashboard/user');
-  }
-};
+    if (navigate && payload?.role) {
+      navigate(payload.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+    }
+  };
 
- const logout = () => {
-  setToken('');
-  setUser(null);
-  localStorage.removeItem('token');
-};
+  const logout = () => {
+    setToken('');
+    setUser(null);
+    localStorage.removeItem('token');
+  };
 
   return (
-<AuthContext.Provider
-  value={{
-    token,
-    user,
-    role: user?.role,
-    isAuthenticated: !!user,
-    login,
-    logout,
-  }}
->      {children}
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        role: user?.role,
+        isAuthenticated: !!user,
+        login,
+        logout,
+      }}
+    >
+      {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook to use AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

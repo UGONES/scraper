@@ -1,33 +1,76 @@
-// controllers/scrapeController.js
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import ScrapedData from '../models/ScrapedData.js';
+import OpenAI from 'openai';
 
-// Create and save a scrape entry (with real scraping logic)
-export const scrapeAndSave = async (req, res) => {
+// ✅ Initialize OpenAI using v4+ syntax
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// ✅ Check if the input is a valid URL
+const isValidUrl = (str) => {
   try {
-    const url = req.body.url || req.query.url;
-    const titleFromClient = req.body.title;
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
-    if (!url || !/^https?:\/\/.+/.test(url)) {
-      return res.status(400).json({ message: 'A valid URL is required' });
+// ✅ Unified scrape handler (handles both URLs and text input)
+export const scrapeHandler = async (req, res) => {
+  const { input } = req.body;
+
+  if (!input || input.length < 3) {
+    return res.status(400).json({ message: 'Invalid input' });
+  }
+
+  try {
+    let result = { title: '', data: {} };
+
+    if (isValidUrl(input)) {
+      // 🌐 Scrape from a URL
+      const { data } = await axios.get(input);
+      const $ = cheerio.load(data);
+      result.title = $('title').text().trim() || 'Untitled';
+      result.data = { html: data };
+    } else {
+      // 🤖 Use OpenAI for text/symbol summarization
+      try {
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a data summarizer that turns user input into structured insights.',
+            },
+            {
+              role: 'user',
+              content: `Extract relevant data and a title from: ${input}`,
+            },
+          ],
+        });
+
+        result.title = 'AI-generated Scrape';
+        result.data = { summary: completion.choices[0].message.content };
+      } catch (error) {
+        console.error('OpenAI GPT Error:', error.message);
+        return res.status(500).json({ message: 'OpenAI API call failed' });
+      }
     }
 
-    const { data } = await axios.get(url);
-    const $ = cheerio.load(data);
-    const scrapedTitle = $('title').text().trim() || 'Untitled';
-
-    const newScrape = new ScrapedData({
+    // 💾 Save to database
+    const newScrape = await ScrapedData.create({
       userId: req.user.userId,
-      url,
-      title: titleFromClient || scrapedTitle,
+      url: isValidUrl(input) ? input : '',
+      title: result.title,
       status: 'Success',
-      data: {
-        html: data,
-      },
+      data: result.data,
     });
-
-    await newScrape.save();
 
     res.status(201).json({
       message: 'Scraping successful',
@@ -37,12 +80,12 @@ export const scrapeAndSave = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('Scraping error:', err.message);
-    res.status(500).json({ message: 'Scraping failed' });
+    console.error('Scrape error:', err.message);
+    res.status(500).json({ message: 'Scrape failed' });
   }
 };
 
-// Get all scrapes for the logged-in user
+// ✅ Get all scrapes for logged-in user
 export const getAllScrapes = async (req, res) => {
   try {
     const scrapes = await ScrapedData.find({ userId: req.user.userId }).sort({ createdAt: -1 });
@@ -53,7 +96,7 @@ export const getAllScrapes = async (req, res) => {
   }
 };
 
-// Get a specific scrape
+// ✅ Get a specific scrape
 export const getScrapeById = async (req, res) => {
   try {
     const scrape = await ScrapedData.findOne({
@@ -72,7 +115,7 @@ export const getScrapeById = async (req, res) => {
   }
 };
 
-// Update a scrape (title, status, or data)
+// ✅ Update a scrape
 export const updateScrape = async (req, res) => {
   try {
     const { title, status, data } = req.body;
@@ -98,7 +141,7 @@ export const updateScrape = async (req, res) => {
   }
 };
 
-// Delete a scrape (by owner)
+// ✅ Delete a scrape
 export const deleteScrape = async (req, res) => {
   try {
     const deleted = await ScrapedData.findOneAndDelete({
@@ -114,5 +157,15 @@ export const deleteScrape = async (req, res) => {
   } catch (err) {
     console.error('Error deleting scrape:', err.message);
     res.status(500).json({ message: 'Failed to delete scrape' });
+  }
+};
+// ✅ Admin-only function to get all scrapes (for admin dashboard)
+export const getAllScrapesAdmin = async (req, res) => {
+  try {
+    const scrapes = await ScrapedData.find().sort({ createdAt: -1 }).populate('userId', 'username email');
+    res.json(scrapes);
+  } catch (err) {
+    console.error('Admin error fetching scrapes:', err.message);
+    res.status(500).json({ message: 'Failed to fetch scrapes' });
   }
 };

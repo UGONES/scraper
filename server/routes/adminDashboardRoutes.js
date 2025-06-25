@@ -1,6 +1,6 @@
 import express from 'express';
+import multer from 'multer';
 import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
-import User from '../models/User.js';
 import { validateRegister } from '../middleware/validateMiddleware.js';
 import {
   getAllUsers,
@@ -8,6 +8,7 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  updateUserProfile
 } from '../controllers/userController.js';
 import {
   getScrapeByIdAdmin,
@@ -18,44 +19,36 @@ import {
 
 const router = express.Router();
 
-// Middleware to protect all admin routes
-router.use(verifyToken, isAdmin);
-
-//
-// ✅ Admin Dashboard Overview Route
-//
-router.get('/dashboard', async (req, res) => {
-  try {
-    const users = await User.find().select('-password');
-    const userCount = await User.countDocuments();
-
-    res.json({
-      message: 'Welcome to the Admin Dashboard',
-      admin: req.user.email,
-      userCount,
-      users,
-    });
-  } catch (error) {
-    console.error('Admin dashboard error:', error.message);
-    res.status(500).json({ message: 'Server error' });
+// ✅ Setup multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'uploads/'),
+  filename: (req, file, cb) => {
+    const ext = file.originalname.split('.').pop();
+    cb(null, `${Date.now()}.${ext}`);
   }
 });
+const upload = multer({ storage });
 
-//
-// ✅ Admin User Management Routes
-//
-router.get('/users', getAllUsers); // List all users
-router.get('/users/:id', getUserById); // Get user by ID
-router.post('/users', validateRegister, createUserByAdmin); // Create new user
-router.put('/users/:id', updateUser); // Update user
-router.delete('/users/:id', deleteUser); // Delete user
+// ✅ Protect all routes
+router.use(verifyToken, isAdmin);
 
-//
-// ✅ Admin Scraped Data Management Routes
-//
-router.get('/scrapes/all', getAllScrapes); // View all scrapes
-router.get('/scrapes/:id', getScrapeByIdAdmin); // Get specific scrape
-router.put('/scrapes/:id', updateScrapeAdmin); // Update scrape
-router.delete('/scrapes/:id', deleteScrapeAdmin); // Delete scrape
+// ✅ Admin dashboard (GET users)
+router.get('/dashboard', getAllUsers);
+
+// ✅ Admin profile update
+router.put('/dashboard', upload.single('avatar'), updateUserProfile);
+
+// ✅ Admin User Management
+router.get('/users', getAllUsers);
+router.get('/users/:id', getUserById);
+router.post('/users', validateRegister, createUserByAdmin);
+router.put('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
+
+// ✅ Admin Scrape Management
+router.get('/scrapes/all', getAllScrapes);
+router.get('/scrapes/:id', getScrapeByIdAdmin);
+router.put('/scrapes/:id', updateScrapeAdmin);
+router.delete('/scrapes/:id', deleteScrapeAdmin);
 
 export default router;

@@ -13,8 +13,8 @@ const router = express.Router();
 router.use('/auth', authRoutes);
 router.use('/data', dataRoutes);
 router.use('/scrape', scrapeRoutes);
-router.use('/admin/dashboard', adminDashboardRoutes);
-router.use('/user/dashboard', userDashboardRoutes);
+router.use('/admin', adminDashboardRoutes);
+router.use('/user', userDashboardRoutes);
 router.use('/users', userRoutes);
 router.use('/contact', contactRoutes);
 

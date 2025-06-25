@@ -1,52 +1,66 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../css/navbar.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '../css/responsive.css';
 
 const Navbar = ({ query, setQuery, items = [] }) => {
-  const { token, user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { token, user } = useAuth();
+  const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/signin');
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
   };
 
   const filtered = items.filter(item =>
     item.title?.toLowerCase().includes(query.toLowerCase())
   );
 
-  const getDashboardLink = () => {
-    return user?.role === 'admin' ? '/admin/dashboard' : '/dashboard/user';
-  };
+  const getDashboardLink = () =>
+    user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+
+  const isOnDashboard = location.pathname.includes('/dashboard') || location.pathname.includes('/admin');
 
   return (
     <div className="navbar-container">
       <nav className="navbar">
-        <Link to="/" className="navbar-logo">DataScraper</Link>
+        <div className="navbar-left">
+          <Link to="/" className="navbar-logo">DataScraper</Link>
+        </div>
 
-        <div className="navbar-menu">
+        <button className="hamburger" onClick={toggleMenu}>
+          <i className="fas fa-bars"></i>
+        </button>
+
+        <div className={`navbar-menu ${menuOpen ? 'show' : ''}`}>
           <ul className="nav-list">
-            <li className="nav-item"><Link to="/">Home</Link></li>
-            <li className="nav-item"><Link to="/about">About</Link></li>
-            <li className="nav-item"><Link to="/services">Services</Link></li>
-            {token && (
+            <li className="nav-item"><Link to="/" onClick={() => setMenuOpen(false)}>Home</Link></li>
+            <li className="nav-item"><Link to="/about" onClick={() => setMenuOpen(false)}>About</Link></li>
+            <li className="nav-item"><Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link></li>
+
+            {token && !isOnDashboard && (
               <li className="nav-item">
-                <Link to={getDashboardLink()}>My Dashboard</Link>
+                <Link to={getDashboardLink()} onClick={() => setMenuOpen(false)}>My Dashboard</Link>
+              </li>
+            )}
+
+            {!token && (
+              <li className="nav-item mobile-only">
+                <Link to="/signup" onClick={() => setMenuOpen(false)}>
+                  <i className="fas fa-user-circle fa-lg" style={{ color: '#61dafb' }}></i>
+                </Link>
               </li>
             )}
           </ul>
         </div>
 
-        <div className="auth-buttons">
-          {token ? (
-            <button className="logout-btn" onClick={handleLogout}>Logout</button>
-          ) : (
-            <>
-              <Link to="/signup">
-                <i className="fas fa-user-circle fa-lg" style={{ color: '#61dafb' }}></i>
-              </Link>
-            </>
+        <div className="auth-buttons desktop-only">
+          {!token && (
+            <Link to="/signup">
+              <i className="fas fa-user-circle fa-lg" style={{ color: '#61dafb' }}></i>
+            </Link>
           )}
         </div>
       </nav>

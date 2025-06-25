@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import axios from '../api/axios';
 import '../css/auth.css';
+import '../css/responsive.css'; // Assuming you have a separate CSS file for contact styling
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
