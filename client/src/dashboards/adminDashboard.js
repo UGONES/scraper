@@ -5,22 +5,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import '../css/dashboard.css';
 
 const AdminDashboard = () => {
-  const [users, setUsers] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { token, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Admin token:", token);
-
-    let isMounted = true; // prevent state update if unmounted
-
-    const fetchUsers = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const res = await axios('/admin/dashboard', {
+        const res = await axios.get('/admin/dashboard', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (isMounted) setUsers(res.data);
+        setDashboardData(res.data);
       } catch (err) {
         console.error('Admin fetch error:', err.response?.data || err.message);
         if ([401, 403].includes(err.response?.status)) {
@@ -28,63 +24,92 @@ const AdminDashboard = () => {
           navigate('/signin');
         }
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchUsers();
-
-    return () => {
-      isMounted = false;
-    };
+    fetchDashboardData();
   }, [token, logout, navigate]);
 
+  const users = dashboardData?.users || [];
+  const scrapes = dashboardData?.scrapes || [];
+  const userCount = dashboardData?.userCount || users.length;
+  const adminEmail = dashboardData?.admin || user?.email || 'N/A';
+  const getDashboardLink = () => '/admin/dashboard';
+  const handleLogout = () => {
+    logout();
+    navigate('/signin');
+  };
   if (loading) return <div className="dashboard-loading">Loading admin dashboard...</div>;
-  if (!users.length) return <div className="dashboard-access-denied">No users found.</div>;
+  if (!dashboardData) return <div className="dashboard-access-denied">Access denied.</div>;
 
   return (
     <div className="dashboard-container">
       <aside className="dashboard-sidebar">
-        <h2>Admin Panel</h2>
+        <h2>{user?.role === 'admin' ? 'Admin Panel' : 'User Panel'}</h2>
         <nav>
           <ul>
-            <li><a href="/admin/dashboard">My Dashboard</a></li>
-            <li><a href="/dashboard/profile">Profile</a></li>
-            <li><Link to="/admin/users">Manage Users</Link></li>
-            <li><a href="/dashboard/scrapes">My Scrapes</a></li>
-            <li><button onClick={logout} className="logout-btn">Logout</button></li>
+            <li className="dashboard-sidebar-item">
+              <Link to={getDashboardLink()}>My Dashboard</Link>
+            </li>
+            {user?.role === 'admin' && (
+              <li className="dashboard-sidebar-item">
+                <Link to="/admin/users">Manage Users</Link>
+              </li>
+            )}
+            <li className="dashboard-sidebar-item">
+              <Link to="/dashboard/profile">Profile</Link>
+            </li>
+            <li className="dashboard-sidebar-item">
+              <Link to="/dashboard/scrapes">My Scrapes</Link>
+            </li>
+            <li className="dashboard-sidebar-item">
+              <button onClick={handleLogout} className="logout-btn">Logout</button>
+            </li>
           </ul>
+
         </nav>
       </aside>
 
+
       <main className="dashboard-main">
         <header className="dashboard-header">
-          <h1>Admin Dashboard</h1>
-          <p>Total Users: {users.length}</p>
+          <h1>Welcome, {user?.username || 'Admin'}</h1>
+          <p>Email: {adminEmail}</p>
+          <p>Total Users:{dashboardData?.userCount || users.length}</p>
         </header>
 
+        <section className="dashboard-stats">
+          <div className="stat-card">
+            <h3>Total Scrapes</h3>
+            <p>{scrapes.length}</p>
+          </div>
+        </section>
+
         <section className="dashboard-table">
-          <h2>User List</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Registered</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u._id}>
-                  <td>{u.username || 'N/A'}</td>
-                  <td>{u.email}</td>
-                  <td>{u.role}</td>
-                  <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+          <h2>Scrape History</h2>
+          {scrapes.length > 0 ? (
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Date</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {scrapes.map((scrape) => (
+                  <tr key={scrape._id}>
+                    <td>{scrape.title}</td>
+                    <td>{new Date(scrape.createdAt).toLocaleDateString()}</td>
+                    <td className={`status ${scrape.status.toLowerCase()}`}>{scrape.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No scrapes found.</p>
+          )}
         </section>
       </main>
     </div>

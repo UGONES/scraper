@@ -1,32 +1,41 @@
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import '../css/dashboard.css';
 
 const UserDashboard = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('/dashboard')
+    const endpoint = user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+
+    axios.get(endpoint, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
       .then((res) => setUserData(res.data))
       .catch((err) => {
-        if (err.response?.status === 401 || err.response?.status === 403) {
+        if ([401, 403].includes(err.response?.status)) {
           logout();
           navigate('/signin');
         }
       })
       .finally(() => setLoading(false));
-  }, [logout, navigate]);
+  }, [logout, navigate, user]);
 
+  const getDashboardLink = () => user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+  const handleLogout = () => {
+    logout();
+    navigate('/signin');
+  };
   if (loading) return <div className="dashboard-loading">Loading user dashboard...</div>;
-
   if (!userData) return <div className="dashboard-access-denied">Access denied.</div>;
 
-  const { user, scrapes = [] } = userData;
+  const userInfo = user || {}; // Get from AuthContext
+  const scrapes = userData?.scrapes || [];
 
   return (
     <div className="dashboard-container">
@@ -34,18 +43,18 @@ const UserDashboard = () => {
         <h2>User Panel</h2>
         <nav>
           <ul>
-            <li><a href="/dashboard">My Dashboard</a></li>
-            <li><a href="/dashboard/profile">Profile</a></li>
-            <li><a href="/dashboard/scrapes">My Scrapes</a></li>
-            <li><button onClick={logout} className="logout-btn">Logout</button></li>
+            <li className="dashboard-sidebar-item"><Link to={getDashboardLink()}>My Dashboard</Link></li>
+            <li className="dashboard-sidebar-item"><Link to="/dashboard/profile">Profile</Link></li>
+            <li className="dashboard-sidebar-item"><Link to="/dashboard/scrapes">My Scrapes</Link></li>
+            <li className="dashboard-sidebar-item"><button onClick={handleLogout} className="logout-btn">Logout</button></li>
           </ul>
         </nav>
       </aside>
 
       <main className="dashboard-main">
         <header className="dashboard-header">
-          <h1>Welcome, {user.username || user.email}</h1>
-          <p>Email: {user.email}</p>
+          <h1>Welcome, {userInfo.username || userInfo.email || 'User'}</h1>
+          <p>Email: {userInfo.email || 'N/A'}</p>
         </header>
 
         <section className="dashboard-stats">

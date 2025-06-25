@@ -2,9 +2,9 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { verifyToken } from '../middleware/authMiddleware.js';
-import {validateScrapeInput} from '../middleware/validateMiddleware.js';
+import { validateScrapeInput } from '../middleware/validateMiddleware.js';
 import {
-  scrapeAndSave,
+  scrapeHandler, // ✅ Unified scrape logic for URL + Text
   getAllScrapes,
   getScrapeById,
   updateScrape,
@@ -16,29 +16,28 @@ const router = express.Router();
 // All routes require authentication
 router.use(verifyToken);
 
-// POST /api/scrapes - Create a new scrape request
+// ✅ POST /api/scrapes - Accepts either a URL or free-form input
 router.post(
   '/',
   [
-    body('url')
-      .exists().withMessage('URL is required')
-      .isURL().withMessage('Invalid URL format'),
-    body('title').optional().isString().trim(),
+    body('input')
+      .exists().withMessage('Input is required')
+      .isString().withMessage('Input must be a string'),
   ],
   validateScrapeInput,
-  scrapeAndSave
+  scrapeHandler
 );
 
-// GET /api/scrapes - Get all scrapes for the logged-in user
+// ✅ GET all scrapes for the logged-in user
 router.get('/', getAllScrapes);
 
-// GET /api/scrapes/:id - Get a single scrape
+// ✅ GET a single scrape
 router.get('/:id', getScrapeById);
 
-// PUT /api/scrapes/:id - Update scrape
+// ✅ PUT: update scrape (title, status, or data)
 router.put('/:id', updateScrape);
 
-// DELETE /api/scrapes/:id - Delete scrape
+// ✅ DELETE a scrape
 router.delete('/:id', deleteScrape);
 
 export default router;

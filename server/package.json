@@ -2,8 +2,9 @@
   "name": "server",
   "private": true,
   "version": "1.0.0",
-  "repository": {
   "type": "module",
+  "repository": {
+    "type": "git",
     "main": "server.js",
     "url": ""
   },
@@ -25,7 +26,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "multer": "^2.0.1",
+    "openai": "^5.7.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import '../../css/dashboard.css';
 import '../../css/profile.css';
 
@@ -15,40 +15,74 @@ const Profile = () => {
     gender: '',
     avatar: ''
   });
-const [selectedFile] = useState(null); 
+  const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState('');
 
-  const { logout } = useAuth();
+  const { logout, user, token } = useAuth();
   const navigate = useNavigate();
 
+  const getDashboardLink = () =>
+    user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/signin');
+  };
+
+  // ✅ Fetch profile on load
   useEffect(() => {
-    axios.get('/user/dashboard')
-      .then(res => {
-        const user = res.data.user;
-        setProfile(user);
-        setForm({
-          fullName: user.fullName || '',
-          email: user.email || '',
-          username: user.username || '',
-          description: user.description || '',
-          gender: user.gender || '',
-          avatar: user.avatar || ''
+    const fetchProfile = async () => {
+      try {
+        const endpoint = user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+        const res = await axios.get(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
-        setPreview(user.avatar || '/default-avatar.png');
-        setLoading(false);
-      })
-      .catch(err => {
+
+        const userData = res.data.user || res.data;
+        setProfile(userData);
+        setForm({
+          fullName: userData.fullName || '',
+          email: userData.email || '',
+          username: userData.username || '',
+          description: userData.description || '',
+          gender: userData.gender || '',
+          avatar: userData.avatar || ''
+        });
+        setPreview(userData.avatar || '/default-avatar.png');
+      } catch (err) {
         console.error('Failed to fetch profile:', err);
         if (err.response?.status === 401 || err.response?.status === 403) {
-          logout();
-          navigate('/signin');
+          handleLogout();
         }
+      } finally {
         setLoading(false);
-      });
-  }, [logout, navigate]);
+      }
+    };
+
+    if (user?.userId) fetchProfile();
+  }, [logout, navigate, token, user]);
+
+  // ✅ Scroll effect for avatar
+  useEffect(() => {
+    const handleScroll = () => {
+      const avatar = document.querySelector('.profile-avatar');
+      if (avatar) {
+        if (window.scrollY > 80) {
+          avatar.classList.add('shrink');
+        } else {
+          avatar.classList.remove('shrink');
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -57,10 +91,10 @@ const [selectedFile] = useState(null);
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
-      // Optional: save to state for upload later
     }
   };
 
@@ -77,43 +111,55 @@ const [selectedFile] = useState(null);
       formData.append('gender', form.gender);
       if (selectedFile) formData.append('avatar', selectedFile);
 
-      const res = await axios.put('/user/dashboard', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const endpoint = user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+
+      const res = await axios.put(endpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
       });
 
-      setProfile(res.data.updatedUser);
+      setProfile(res.data.user || res.data);
       setMessage('✅ Profile updated successfully');
     } catch (err) {
       console.error(err);
-      setMessage('❌ Failed to update profile');
+      const errMsg = err?.response?.data?.message || '❌ Failed to update profile';
+      setMessage(`❌ ${errMsg}`);
     }
 
     setUpdating(false);
   };
-  const handleScroll = () => {
-    const avatar = document.querySelector('.profile-avatar');
-    if (window.scrollY > 80) {
-      avatar?.classList.add('sticky');
-    } else {
-      avatar?.classList.remove('sticky');
-    }
-  };
-
-  window.addEventListener('scroll', handleScroll);
-  window.removeEventListener('scroll', handleScroll);
 
   if (loading) return <div className="dashboard-loading">Loading profile...</div>;
 
   return (
     <div className="dashboard-container">
       <aside className="dashboard-sidebar">
-        <h2>User Panel</h2>
+        <h2>{user?.role === 'admin' ? 'Admin Panel' : 'User Panel'}</h2>
         <nav>
           <ul>
-            <li><a href="/dashboard">My Dashboard</a></li>
-            <li><a href="/dashboard/profile" className="active">Profile</a></li>
-            <li><a href="/dashboard/scrapes">My Scrapes</a></li>
-            <li><button onClick={logout} className="logout-btn">Logout</button></li>
+            <li className="dashboard-sidebar-item">
+              <Link to={getDashboardLink()}>My Dashboard</Link>
+            </li>
+
+            <li className="dashboard-sidebar-item">
+              <Link to="/dashboard/profile" className="active">Profile</Link>
+            </li>
+
+            {user?.role === 'admin' && (
+              <li className="dashboard-sidebar-item">
+                <Link to="/admin/users">Manage Users</Link>
+              </li>
+            )}
+
+            <li className="dashboard-sidebar-item">
+              <Link to="/dashboard/scrapes">My Scrapes</Link>
+            </li>
+
+            <li className="dashboard-sidebar-item">
+              <button onClick={handleLogout} className="logout-btn">Logout</button>
+            </li>
           </ul>
         </nav>
       </aside>
@@ -124,29 +170,30 @@ const [selectedFile] = useState(null);
           <p>Update your account details below</p>
         </header>
 
-        <div className="profile-card shadow p-4 rounded">
-          <div className="profile-photo-upload text-center mb-4">
-            <input
-              type="file"
-              id="avatarInput"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="d-none"
-            />
-            <label htmlFor="avatarInput" className="upload-label">
-              <img
-                src={preview || '/default-avatar.png'}
-                alt=""
-                className="profile-avatar"
+        <div className="profile-card">
+          <div className="profile-photo-upload">
+            <div className="profile-avatar-container">
+              <input
+                type="file"
+                id="avatarInput"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="d-none"
               />
-              <div className="upload-overlay"></div>
-            </label>
+              <label htmlFor="avatarInput" className="upload-label">
+                <img
+                  src={preview || '/default-avatar.png'}
+                  alt=""
+                  className="profile-avatar"
+                />
+                <div className="upload-overlay"></div>
+              </label>
+            </div>
           </div>
-
 
           {message && <p className="text-center text-info">{message}</p>}
 
-          <form onSubmit={handleSubmit} encType="multipart/form-data">
+          <form onSubmit={handleSubmit} encType="multipart/form-data" className="profile-form">
             <div className="mb-3">
               <label className="form-label">Full Name</label>
               <input
@@ -172,12 +219,14 @@ const [selectedFile] = useState(null);
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Username (read-only)</label>
+              <label className="form-label">Username</label>
               <input
+                name="username"
                 type="text"
                 className="form-control"
                 value={form.username}
-                readOnly
+                onChange={handleChange}
+                required
               />
             </div>
 
@@ -215,8 +264,8 @@ const [selectedFile] = useState(null);
             </div>
           </form>
         </div>
-      </main >
-    </div >
+      </main>
+    </div>
   );
 };
 

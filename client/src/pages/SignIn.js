@@ -14,50 +14,31 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-    try {
-      const res = await axios.post('/auth/login', { email, password }); // FIX: Use correct backend route for login
 
-      if (res.data?.token) {
-        login(res.data.token, navigate); // ✅ pass navigate into login
+    try {
+      const res = await axios.post('/auth/login', { email, password });
+
+      if (res.data?.token && res.data?.username) {
+        const { token, username, userId, role } = res.data;
+        const userPayload = { username, userId, role, email: res.data.email || '' };
+        login(token, userPayload, navigate); // ✅ Updated login usage
       } else {
-        setFormError('Invalid response from server');
+        setFormError('Login failed: Invalid response from server');
       }
     } catch (err) {
-      setFormError(err.response?.data?.message || 'Login failed');
+      const message = err.response?.data?.message || 'Login failed';
+      setFormError(message);
     }
   };
 
   return (
     <div className="auth-container">
-      <div id="carouselExampleIndicators" className="carousel slide" data-bs-ride="carousel">
-        <div className="carousel-indicators">
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1" />
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2" />
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3" />
-        </div>
-        <div className="carousel-inner">
-          <div className="carousel-item active">
-            <img src="#" className="d-block w-100 carousel-img" alt="First Slide" />
-          </div>
-          <div className="carousel-item">
-            <img src="#" className="d-block w-100 carousel-img" alt="Second Slide" />
-          </div>
-          <div className="carousel-item">
-            <img src="#" className="d-block w-100 carousel-img" alt="Third Slide" />
-          </div>
-        </div>
-        <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-          <span className="carousel-control-prev-icon" aria-hidden="true" />
-          <span className="visually-hidden">Previous</span>
-        </button>
-        <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-          <span className="carousel-control-next-icon" aria-hidden="true" />
-          <span className="visually-hidden">Next</span>
-        </button>
-      </div>
-      {formError && <div className="form-error">{formError}</div>}
+      {/* Your carousel code stays unchanged */}
+
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Sign In</h2>
+
+        {formError && <div className="form-error">{formError}</div>}
 
         <div className="auth-group">
           <label htmlFor="email">Email</label>

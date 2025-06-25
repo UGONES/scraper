@@ -3,7 +3,12 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 export const register = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  console.log('Received register body:', req.body);
+  const { username, fullName, email, password, role } = req.body;
+
+  if (!username || !email || !password || !fullName) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
 
   try {
     const existing = await User.findOne({ email });
@@ -15,6 +20,7 @@ export const register = async (req, res) => {
 
     const newUser = await User.create({
       username,
+      fullName,
       email,
       password: hashedPassword,
       role: ['admin', 'user'].includes(role) ? role : 'user',
@@ -36,10 +42,16 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
+  console.log('Login body:', req.body);
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
 
   try {
     const user = await User.findOne({ email });
+    console.log('Found user:', user);
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -54,6 +66,7 @@ export const login = async (req, res) => {
         userId: user._id,
         role: user.role,
         email: user.email,
+        username: user.username, // ✅ ensure this is included
       },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
@@ -65,6 +78,7 @@ export const login = async (req, res) => {
       role: user.role,
       userId: user._id,
       username: user.username,
+      email: user.email,
     });
   } catch (err) {
     console.error('Login error:', err.message);
