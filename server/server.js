@@ -16,12 +16,12 @@ import mongoose from 'mongoose';
    1.  Load environment variables
    ───────────────────────────── */
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 // Prefer a project‑root .env, fall back to /server/.env
-const rootEnv   = path.resolve(process.cwd(), '.env');
+const rootEnv = path.resolve(process.cwd(), '.env');
 const serverEnv = path.resolve(__dirname, '.env');
-const envFile   = fs.existsSync(rootEnv) ? rootEnv : serverEnv;
+const envFile = fs.existsSync(rootEnv) ? rootEnv : serverEnv;
 
 dotenv.config({ path: envFile });
 console.log('[DEBUG] Loaded .env from:', envFile);
@@ -37,7 +37,7 @@ if (!MONGO_URI) {
    2.  Express app setup
    ───────────────────────────── */
 const LOCAL_PORT = process.env.LOCAL_PORT || 5000;
-const PORT       = process.env.PORT || LOCAL_PORT;
+const PORT = process.env.PORT || LOCAL_PORT;
 
 const app = express();
 
@@ -61,13 +61,13 @@ app.use('/uploads', express.static(uploadsDir));
 import apiRoutes from './routes/api.js';
 app.use('/api', apiRoutes);
 
-// Serve React build (if present)
-const clientBuild = path.join(__dirname, 'client', 'build');
+// ✅ Serve React frontend from ../client/build
+const clientBuild = path.resolve(__dirname, '../client/build');
 if (fs.existsSync(clientBuild)) {
   app.use(express.static(clientBuild));
-  app.get('*', (_req, res) =>
-    res.sendFile(path.join(clientBuild, 'index.html')),
-  );
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(clientBuild, 'index.html'));
+  });
 }
 
 // 404 for unknown API routes
@@ -96,7 +96,7 @@ mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅  MongoDB connected');
     app.listen(PORT, '0.0.0.0', () =>
-      console.log(`🚀  Server listening on port ${PORT}`),
+      console.log(`🚀  Server listening on port ${PORT}`)
     );
   })
   .catch((err) => {
@@ -105,6 +105,7 @@ mongoose.connect(MONGO_URI)
   });
 
 export default app;
+
 // Note: This file exports the Express app instance.
 // This allows us to import the app in tests without starting the server  
 // or duplicating the connection logic.
