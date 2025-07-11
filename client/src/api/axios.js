@@ -3,7 +3,7 @@ import axios from 'axios';
 import { getStoredAuth, clearStoredAuth } from '../utils/authHelpers';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api' || 'https://server.onrender.com',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
   withCredentials: true,
   timeout: 15000,
 });
