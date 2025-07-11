@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "nodemon src/index.js server.js",
-    "start": "node server/server.js",
+    "start": "node server.js",
     "build": "tsc",
     "test": "echo \"No tests yet\" && exit 0"
   },
