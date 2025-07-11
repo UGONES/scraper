@@ -1,171 +1,92 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
-import dotenv from 'dotenv';
-dotenv.config();
+import fetch from 'node-fetch'; // ✅ Needed for Node < 18
+import Scrape from '../models/ScrapeModel.js';
 
-import ScrapedData from '../models/ScrapedData.js';
-import OpenAI from 'openai';
-
-// ✅ Initialize OpenAI using v4+ syntax
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// ✅ Check if the input is a valid URL
-const isValidUrl = (str) => {
+export const createScrape = async (req, res, next) => {
   try {
-    new URL(str);
-    return true;
-  } catch {
-    return false;
-  }
-};
+    const { input } = req.body;
 
-// ✅ Unified scrape handler (handles both URLs and text input)
-export const scrapeHandler = async (req, res) => {
-  const { input } = req.body;
-
-  if (!input || input.length < 3) {
-    return res.status(400).json({ message: 'Invalid input' });
-  }
-
-  try {
-    let result = { title: '', data: {} };
-
-    if (isValidUrl(input)) {
-      // 🌐 Scrape from a URL
-      const { data } = await axios.get(input);
-      const $ = cheerio.load(data);
-      result.title = $('title').text().trim() || 'Untitled';
-      result.data = { html: data };
-    } else {
-      // 🤖 Use OpenAI for text/symbol summarization
-      try {
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a data summarizer that turns user input into structured insights.',
-            },
-            {
-              role: 'user',
-              content: `Extract relevant data and a title from: ${input}`,
-            },
-          ],
-        });
-
-        result.title = 'AI-generated Scrape';
-        result.data = { summary: completion.choices[0].message.content };
-      } catch (error) {
-        console.error('OpenAI GPT Error:', error.message);
-        return res.status(500).json({ message: 'OpenAI API call failed' });
-      }
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Unauthorized: Missing user ID' });
     }
 
-    // 💾 Save to database
-    const newScrape = await ScrapedData.create({
-      userId: req.user.userId,
-      url: isValidUrl(input) ? input : '',
-      title: result.title,
-      status: 'Success',
-      data: result.data,
-    });
+    const prompt = `
+You are an expert data-extraction assistant.
+== Input ==
+${input}
 
-    res.status(201).json({
-      message: 'Scraping successful',
-      data: {
-        id: newScrape._id,
-        title: newScrape.title,
+== Instructions (return MARKDOWN) ==
+1. If input is a URL, describe the page (title, author, date).
+2. Extract key data / facts.
+3. Explain what the data means in plain English.
+4. Use headings, bullet lists, and code blocks when helpful.
+`;
+
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': process.env.GEMINI_API_KEY,
       },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ]
+      })
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[Gemini Error]', data);
+      return res.status(500).json({
+        error: data.error?.message || 'Failed to generate content from Gemini'
+      });
+    }
+
+    const result = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No result returned.';
+    if (!result || result === 'No result returned.') {
+      return res.status(400).json({ error: 'Gemini did not return a valid result.' });
+    }
+
+    const [introBlock, ...analysisBlocks] = result.split('###');
+    const intro = introBlock.trim();
+    const analysis = analysisBlocks.join('###').trim();
+
+    const scrape = await Scrape.create({
+      userId: req.user.id,
+      source: input,
+      result, // ✅ required field
+      intro,
+      analysis,
+    });
+
+
+    res.status(201).json(scrape);
   } catch (err) {
-    console.error('Scrape error:', err.message);
-    res.status(500).json({ message: 'Scrape failed' });
+    next(err);
   }
 };
 
-// ✅ Get all scrapes for logged-in user
-export const getAllScrapes = async (req, res) => {
+export const getOwnScrapes = async (req, res, next) => {
   try {
-    const scrapes = await ScrapedData.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    const scrapes = await Scrape.find({ userId: req.user.id }).sort("-createdAt");
     res.json(scrapes);
   } catch (err) {
-    console.error('Error fetching scrapes:', err.message);
-    res.status(500).json({ message: 'Failed to fetch scrapes' });
+    next(err);
   }
 };
 
-// ✅ Get a specific scrape
-export const getScrapeById = async (req, res) => {
+export const getAllScrapes = async (_req, res, next) => {
   try {
-    const scrape = await ScrapedData.findOne({
-      _id: req.params.id,
-      userId: req.user.userId,
-    });
-
-    if (!scrape) {
-      return res.status(404).json({ message: 'Scrape not found' });
-    }
-
-    res.json(scrape);
-  } catch (err) {
-    console.error('Error fetching scrape:', err.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// ✅ Update a scrape
-export const updateScrape = async (req, res) => {
-  try {
-    const { title, status, data } = req.body;
-
-    const scrape = await ScrapedData.findOne({
-      _id: req.params.id,
-      userId: req.user.userId,
-    });
-
-    if (!scrape) {
-      return res.status(404).json({ message: 'Scrape not found' });
-    }
-
-    if (title) scrape.title = title.trim();
-    if (status && ['Pending', 'Success', 'Failed'].includes(status)) scrape.status = status;
-    if (data) scrape.data = data;
-
-    await scrape.save();
-    res.json(scrape);
-  } catch (err) {
-    console.error('Error updating scrape:', err.message);
-    res.status(500).json({ message: 'Failed to update scrape' });
-  }
-};
-
-// ✅ Delete a scrape
-export const deleteScrape = async (req, res) => {
-  try {
-    const deleted = await ScrapedData.findOneAndDelete({
-      _id: req.params.id,
-      userId: req.user.userId,
-    });
-
-    if (!deleted) {
-      return res.status(404).json({ message: 'Scrape not found or already deleted' });
-    }
-
-    res.json({ message: 'Scrape deleted successfully' });
-  } catch (err) {
-    console.error('Error deleting scrape:', err.message);
-    res.status(500).json({ message: 'Failed to delete scrape' });
-  }
-};
-// ✅ Admin-only function to get all scrapes (for admin dashboard)
-export const getAllScrapesAdmin = async (req, res) => {
-  try {
-    const scrapes = await ScrapedData.find().sort({ createdAt: -1 }).populate('userId', 'username email');
+    const scrapes = await Scrape.find({}).populate("userId", "username role email"); // ✅ Matches schema
     res.json(scrapes);
   } catch (err) {
-    console.error('Admin error fetching scrapes:', err.message);
-    res.status(500).json({ message: 'Failed to fetch scrapes' });
+    next(err);
   }
 };

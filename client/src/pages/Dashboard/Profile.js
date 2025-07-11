@@ -1,269 +1,170 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from '../../api/axios';
+import { useEffect, useState } from "react";
 import { useAuth } from '../../context/AuthContext';
-import '../../css/dashboard.css';
+import Sidebar from "../../components/Sidebar";
+import api from "../../api/axios";
 import '../../css/profile.css';
+import '../../css/dashboard.css';
+
+const Input = ({ label, ...rest }) => (
+  <label className="mb-3">
+    <span className="form-label">{label}</span>
+    <input {...rest} className="form-control" />
+  </label>
+);
+
+const Select = ({ label, name, value, onChange, options }) => (
+  <label className="mb-3">
+    <span className="form-label">{label}</span>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="form-control"
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  </label>
+);
 
 const Profile = () => {
+  const { auth } = useAuth();
   const [profile, setProfile] = useState(null);
   const [form, setForm] = useState({
-    fullName: '',
-    email: '',
-    username: '',
-    description: '',
-    gender: '',
-    avatar: ''
+    fullName: "",
+    bio: "",
+    gender: "",
+    description: "",
   });
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [preview, setPreview] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [message, setMessage] = useState('');
+  const [avatar, setAvatar] = useState(null);
+  const [editing, setEditing] = useState(false);
 
-  const { logout, user, token } = useAuth();
-  const navigate = useNavigate();
+  const profileUrl = auth?.role === 'admin'
+    ? '/dashboard/admin/profile'
+    : '/dashboard/user/profile';
 
-  const getDashboardLink = () =>
-    user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
-
-  const handleLogout = () => {
-    logout();
-    navigate('/signin');
-  };
-
-  // ✅ Fetch profile on load
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const endpoint = user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
-        const res = await axios.get(endpoint, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const userData = res.data.user || res.data;
-        setProfile(userData);
-        setForm({
-          fullName: userData.fullName || '',
-          email: userData.email || '',
-          username: userData.username || '',
-          description: userData.description || '',
-          gender: userData.gender || '',
-          avatar: userData.avatar || ''
-        });
-        setPreview(userData.avatar || '/default-avatar.png');
-      } catch (err) {
-        console.error('Failed to fetch profile:', err);
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          handleLogout();
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user?.userId) fetchProfile();
-  }, [logout, navigate, token, user]);
-
-  // ✅ Scroll effect for avatar
-  useEffect(() => {
-    const handleScroll = () => {
-      const avatar = document.querySelector('.profile-avatar');
-      if (avatar) {
-        if (window.scrollY > 80) {
-          avatar.classList.add('shrink');
-        } else {
-          avatar.classList.remove('shrink');
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setUpdating(true);
-
-    try {
-      const formData = new FormData();
-      formData.append('fullName', form.fullName);
-      formData.append('email', form.email);
-      formData.append('username', form.username);
-      formData.append('description', form.description);
-      formData.append('gender', form.gender);
-      if (selectedFile) formData.append('avatar', selectedFile);
-
-      const endpoint = user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
-
-      const res = await axios.put(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
+    api.get(profileUrl)
+      .then(({ data }) => {
+        setProfile(data);
+        if (data) setForm(data);
       });
+  }, [profileUrl]);
 
-      setProfile(res.data.user || res.data);
-      setMessage('✅ Profile updated successfully');
-    } catch (err) {
-      console.error(err);
-      const errMsg = err?.response?.data?.message || '❌ Failed to update profile';
-      setMessage(`❌ ${errMsg}`);
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleFile = (e) => setAvatar(e.target.files[0]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const fd = new FormData();
+    Object.entries(form).forEach(([key, value]) => {
+      fd.append(key, value);
+    });
+    if (avatar) {
+      fd.append("avatar", avatar);
     }
 
-    setUpdating(false);
+    api
+      .put(profileUrl, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then(({ data }) => {
+        setProfile(data);
+        setEditing(false);
+        setAvatar(null);
+      });
   };
-
-  if (loading) return <div className="dashboard-loading">Loading profile...</div>;
 
   return (
-    <div className="dashboard-container">
-      <aside className="dashboard-sidebar">
-        <h2>{user?.role === 'admin' ? 'Admin Panel' : 'User Panel'}</h2>
-        <nav>
-          <ul>
-            <li className="dashboard-sidebar-item">
-              <Link to={getDashboardLink()}>My Dashboard</Link>
-            </li>
+    <div className="dashboard-wrapper">
+      <Sidebar role={auth?.role} />
+      <main className="profile-container">
+        <h1 className="form-label mb-3">Profile</h1>
 
-            <li className="dashboard-sidebar-item">
-              <Link to="/dashboard/profile" className="active">Profile</Link>
-            </li>
-
-            {user?.role === 'admin' && (
-              <li className="dashboard-sidebar-item">
-                <Link to="/admin/users">Manage Users</Link>
-              </li>
+        {profile && !editing ? (
+          <div className="profile-card">
+            {profile.avatar ? (
+              <img src={profile.avatar} alt="Profile" className="profile-avatar" />
+            ) : (
+              <div className="profile-avatar fallback">No Avatar</div>
             )}
 
-            <li className="dashboard-sidebar-item">
-              <Link to="/dashboard/scrapes">My Scrapes</Link>
-            </li>
+            <p><strong>Username:</strong> {profile.username || "—"}</p>
+            <p><strong>Name:</strong> {profile.fullName || "—"}</p>
+            <p><strong>Bio:</strong> {profile.bio || "—"}</p>
+            <p><strong>Gender:</strong> {profile.gender || "—"}</p>
+            <p><strong>Description:</strong> {profile.description || "—"}</p>
 
-            <li className="dashboard-sidebar-item">
-              <button onClick={handleLogout} className="logout-btn">Logout</button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
+            <button className="btn-primary" onClick={() => setEditing(true)}>
+              Update Profile
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="profile-form profile-card"
+            encType="multipart/form-data"
+          >
+            <div className="upload-label">
+              {avatar ? (
+                <img src={URL.createObjectURL(avatar)} alt="Preview" className="profile-avatar" />
+              ) : profile?.avatar ? (
+                <img src={profile.avatar} alt="Profile" className="profile-avatar" />
+              ) : (
+                <div className="profile-avatar fallback">No Avatar</div>
+              )}
 
-      <main className="dashboard-main">
-        <header className="dashboard-header">
-          <h1>Your Profile</h1>
-          <p>Update your account details below</p>
-        </header>
-
-        <div className="profile-card">
-          <div className="profile-photo-upload">
-            <div className="profile-avatar-container">
+              <span className="form-label">Upload Avatar</span>
               <input
                 type="file"
-                id="avatarInput"
                 accept="image/*"
-                onChange={handleFileChange}
-                className="d-none"
-              />
-              <label htmlFor="avatarInput" className="upload-label">
-                <img
-                  src={preview || '/default-avatar.png'}
-                  alt=""
-                  className="profile-avatar"
-                />
-                <div className="upload-overlay"></div>
-              </label>
-            </div>
-          </div>
-
-          {message && <p className="text-center text-info">{message}</p>}
-
-          <form onSubmit={handleSubmit} encType="multipart/form-data" className="profile-form">
-            <div className="mb-3">
-              <label className="form-label">Full Name</label>
-              <input
-                type="text"
+                onChange={handleFile}
                 className="form-control"
-                name="fullName"
-                value={form.fullName}
-                onChange={handleChange}
-                required
               />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label">Email</label>
-              <input
-                type="email"
-                className="form-control"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            <Input
+              name="fullName"
+              label="Full Name"
+              value={form.fullName}
+              onChange={handleChange}
+            />
+            <Input
+              name="bio"
+              label="Bio"
+              value={form.bio}
+              onChange={handleChange}
+            />
+            <Select
+              name="gender"
+              label="Gender"
+              value={form.gender}
+              onChange={handleChange}
+              options={[
+                { value: "", label: "Select" },
+                { value: "male", label: "Male" },
+                { value: "female", label: "Female" },
+                { value: "non-binary", label: "Non-binary" },
+                { value: "prefer-not-to-say", label: "Prefer not to say" },
+              ]}
+            />
+            <Input
+              name="description"
+              label="Description"
+              value={form.description}
+              onChange={handleChange}
+            />
 
-            <div className="mb-3">
-              <label className="form-label">Username</label>
-              <input
-                name="username"
-                type="text"
-                className="form-control"
-                value={form.username}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Gender</label>
-              <select
-                className="form-control"
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-              >
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="non-binary">Non-binary</option>
-                <option value="prefer-not-to-say">Prefer not to say</option>
-              </select>
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Description / Bio</label>
-              <textarea
-                className="form-control"
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows="3"
-              />
-            </div>
-
-            <div className="text-center">
-              <button type="submit" className="btn btn-primary" disabled={updating}>
-                {updating ? 'Updating...' : 'Update Profile'}
-              </button>
-            </div>
+            <button className="btn-primary">
+              {profile ? "Save Changes" : "Add Profile"}
+            </button>
           </form>
-        </div>
+        )}
       </main>
     </div>
   );

@@ -16,20 +16,19 @@ const SignIn = () => {
     setFormError('');
 
     try {
-      const res = await axios.post('/auth/login', { email, password });
-
-      if (res.data?.token && res.data?.username) {
-        const { token, username, userId, role } = res.data;
-        const userPayload = { username, userId, role, email: res.data.email || '' };
-        login(token, userPayload, navigate); // ✅ Updated login usage
-      } else {
-        setFormError('Login failed: Invalid response from server');
+      const { data } = await axios.post('/auth/login', { email, password });
+      /* data = { token, role, username, userId, email } */
+      if (!data?.token) {
+        return setFormError('Login failed: Invalid response from server');
       }
+      login(data);               // ✅ ONE correct call
+      navigate('/dashboard');    // ✅ let DashboardRouter decide user/admin
     } catch (err) {
-      const message = err.response?.data?.message || 'Login failed';
-      setFormError(message);
+      const msg = err.response?.data?.message || 'Login failed';
+      setFormError(msg);
     }
   };
+
 
   return (
     <div className="auth-container">

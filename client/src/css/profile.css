@@ -1,203 +1,138 @@
-/* Container for profile page */
+/* ========== PROFILE PAGE ========== */
+
 .profile-container {
-  max-width: 600px;
+  background-color: #f3f4f6; /* Tailwind gray-200 */
+  min-height: 100vh;
+  width: 100%;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 2rem;
 }
 
-/* Profile card */
+/* Card styling for both view & form */
 .profile-card {
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
+  background-color: #ffffff;
+    max-width: 720px;
+
+  border-radius: 12px;
+  padding: 2rem;
   box-shadow: 0 4px 10px #007bff1a;
-  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.profile-form{
+/* ========== FORM ========== */
+.profile-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 .mb-3 {
+  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;}
+}
+
 .profile-form .form-label {
-  font-weight: bold;
+  font-weight: 600;
+  color: #374151; /* Tailwind gray-700 */
+  margin-bottom: 0.5rem;
 }
 
 .profile-form .form-control {
-  border: 1px solid #007bff;
-  border-radius: 5px;
-  padding: 0.5rem;
+  border: 1px solid #cbd5e1; /* Tailwind gray-300 */
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  background-color: #f9fafb;
+  transition: border 0.3s ease;
 }
 
-/* Profile avatar (default state) */
+.profile-form .form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: #fff;
+}
+
+/* ========== AVATAR ========== */
 .profile-avatar {
-  width: 5rem;
-  height: 5rem;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: 9999px;
   border: 3px solid #007bff;
+  margin-bottom: 1rem;
   transition: all 0.3s ease;
 }
 
-/* Shrink on scroll */
-.profile-avatar.shrink .profile-avatar-container {
-  width: 80px;
-  height: 80px;
-}
-
-/* When scrolling - sticky avatar on top-left corner */
-.profile-avatar.sticky  {
-  position: relative;
-  top: 30px;
-  left: 30px;
-  width: 30px;
-  height: 30px;
-  border-radius: 30px;
-  z-index: 1000;
-}
-
-.profile-avatar-container .d-none {
-  position: relative;
-  display: none;
-}
-
-/* Upload container */
-.profile-photo-upload {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-
-}
-
-/* Label that wraps the input and avatar */
-.upload-label {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-}
-
-/* Overlay text on avatar */
-.upload-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.3rem;
-  background-color: #007bffb6;
+/* Fallback avatar box */
+.profile-avatar.fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background-color: #cbd5e1;
   color: white;
-  font-size: 0.75rem;
-  border-radius: 1000%;
-  border-radius: 100%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+}
+
+/* Upload section */
+.upload-label {
+  display: block;
   text-align: center;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
 }
 
-/* Show overlay on hover */
-.upload-label:hover  {
-  opacity: 1;
-}
-/* === Responsive Adjustments for Profile Page === */
-
-/* Tablets and below */
-@media (max-width: 992px) {
-  .profile-container {
-    padding: 1rem 2rem;
-  }
-
-  .profile-card {
-    padding: 1rem;
-  }
-
-  .profile-avatar {
-    width: 4rem;
-    height: 4rem;
-  }
-
-  .profile-avatar.sticky {
-    top: 20px;
-    left: 20px;
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
-  .upload-overlay {
-    font-size: 0.65rem;
-  }
+.upload-label .form-label {
+  display: block;
+  margin-bottom: 0.3rem;
 }
 
-/* Mobile (small screens) */
+.upload-label .form-control {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* ========== BUTTONS ========== */
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+/* ========== TEXT ========== */
+.profile-card p {
+  margin: 0.4rem 0;
+  color: #374151;
+}
+
+.profile-card strong {
+  color: #1f2937; /* Tailwind gray-800 */
+}
+
+/* ========== RESPONSIVENESS ========== */
 @media (max-width: 768px) {
   .profile-container {
-    width: 100%;
-    padding: 0.75rem;
-  }
-
-  .profile-card {
     padding: 1rem;
-    box-shadow: 0 2px 6px #007bff33;
   }
 
-  .profile-form {
-    gap: 0.75rem;
-  }
-
-  .mb-3 {
-    margin-bottom: 0.75rem;
-  }
-
-  .profile-avatar {
-    width: 3.5rem;
-    height: 3.5rem;
-    border-width: 2px;
-  }
-
-  .profile-avatar.sticky {
-    width: 2rem;
-    height: 2rem;
-    top: 15px;
-    left: 15px;
-  }
-
-  .upload-overlay {
-    font-size: 0.6rem;
-    padding: 0.2rem;
-  }
-}
-
-/* Very small screens */
-@media (max-width: 480px) {
   .profile-card {
-    padding: 0.75rem;
+    padding: 1.5rem;
   }
 
   .profile-avatar {
-    width: 3rem;
-    height: 3rem;
-  }
-
-  .profile-avatar.sticky {
-    width: 1.75rem;
-    height: 1.75rem;
-    top: 10px;
-    left: 10px;
-  }
-
-  .upload-overlay {
-    font-size: 0.5rem;
-  }
-
-  .profile-form .form-control {
-    padding: 0.4rem;
-    font-size: 0.875rem;
-  }
-
-  .profile-form .form-label {
-    font-size: 0.875rem;
+    width: 90px;
+    height: 90px;
   }
 }
+

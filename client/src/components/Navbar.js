@@ -1,27 +1,29 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../css/navbar.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../css/responsive.css';
 
 const Navbar = ({ query, setQuery, items = [] }) => {
-  const { token, user } = useAuth();
+  const { auth } = useAuth();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  const token = auth?.token;
+  const user = auth;
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const filtered = items.filter(item =>
     item.title?.toLowerCase().includes(query.toLowerCase())
   );
 
   const getDashboardLink = () =>
-    user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+    user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/user';
 
-  const isOnDashboard = location.pathname.includes('/dashboard') || location.pathname.includes('/admin');
+  const isOnDashboard =
+    location.pathname.includes('/dashboard') || location.pathname.includes('/admin');
 
   return (
     <div className="navbar-container">
@@ -46,7 +48,7 @@ const Navbar = ({ query, setQuery, items = [] }) => {
               </li>
             )}
 
-            {!token && (
+            {!token && !isOnDashboard && (
               <li className="nav-item mobile-only">
                 <Link to="/signup" onClick={() => setMenuOpen(false)}>
                   <i className="fas fa-user-circle fa-lg" style={{ color: '#61dafb' }}></i>
@@ -57,7 +59,7 @@ const Navbar = ({ query, setQuery, items = [] }) => {
         </div>
 
         <div className="auth-buttons desktop-only">
-          {!token && (
+          {!token && !isOnDashboard && (
             <Link to="/signup">
               <i className="fas fa-user-circle fa-lg" style={{ color: '#61dafb' }}></i>
             </Link>

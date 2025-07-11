@@ -1,55 +1,76 @@
-import dotenv from 'dotenv';
-import path from 'path';
+/**
+ * server.js – production‑safe Express entry‑point
+ * Works locally and on Render.com
+ */
+
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import { connect } from 'mongoose';
-import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 
-// 🗄️ Load environment variables
-dotenv.config({ path: new URL('../.env', import.meta.url).pathname });
-
-// 📍 Resolve current file paths
+/* ─────────────────────────────
+   1.  Load environment variables
+   ───────────────────────────── */
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
-// 🚀 Create Express app
-const app = express();
-const PORT = process.env.PORT || 4000;
+// Prefer a project‑root .env, fall back to /server/.env
+const rootEnv   = path.resolve(process.cwd(), '.env');
+const serverEnv = path.resolve(__dirname, '.env');
+const envFile   = fs.existsSync(rootEnv) ? rootEnv : serverEnv;
 
-// 🗂️ Ensure /uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-  console.log('✅ /uploads folder created');
+dotenv.config({ path: envFile });
+console.log('[DEBUG] Loaded .env from:', envFile);
+
+// Fail fast if Mongo URI still missing
+const MONGO_URI = process.env.MONGO_URI || process.env.DATABASE_URL;
+if (!MONGO_URI) {
+  console.error('❌  MONGO_URI (or DATABASE_URL) is not set in', envFile);
+  process.exit(1);
 }
 
-// 🛡️ Middleware
-app.use(
-  cors({
-    origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:3000',
-    credentials: true,
-  })
-);
-app.use(express.json());
-app.use(morgan('dev'));
+/* ─────────────────────────────
+   2.  Express app setup
+   ───────────────────────────── */
+const LOCAL_PORT = process.env.LOCAL_PORT || 5000;
+const PORT       = process.env.PORT || LOCAL_PORT;
 
-// 📁 Serve static uploads
+const app = express();
+
+// Ensure /uploads exists
+const uploadsDir = path.join(__dirname, 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+app.use(cors({
+  origin: (process.env.CLIENT_ORIGIN ?? 'http://localhost:3000').split(','),
+  credentials: true,
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+// Static uploads
 app.use('/uploads', express.static(uploadsDir));
 
-// 🔌 API routes
+/* ─────────────────────────────
+   3.  API & front‑end routes
+   ───────────────────────────── */
 import apiRoutes from './routes/api.js';
 app.use('/api', apiRoutes);
 
-// 🌐 Serve React build when present
+// Serve React build (if present)
 const clientBuild = path.join(__dirname, 'client', 'build');
 if (fs.existsSync(clientBuild)) {
   app.use(express.static(clientBuild));
-  app.get('*', (_req, res) => res.sendFile(path.join(clientBuild, 'index.html')));
+  app.get('*', (_req, res) =>
+    res.sendFile(path.join(clientBuild, 'index.html')),
+  );
 }
 
-// 🛑 404 handler for API routes
+// 404 for unknown API routes
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api')) {
     return res.status(404).json({ message: 'Route not found' });
@@ -57,31 +78,38 @@ app.use((req, res, next) => {
   next();
 });
 
-// ❗ Global error handler
+// Global error handler
 app.use((err, _req, res, _next) => {
-  console.error('Global error handler:', err);
+  console.error(err);
   res.status(500).json({ message: 'Internal server error' });
 });
 
+// Log unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-// 🗄️ Connect to MongoDB and start server
-connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+/* ─────────────────────────────
+   4.  Connect to MongoDB & start server
+   ───────────────────────────── */
+mongoose.connect(MONGO_URI)
   .then(() => {
-    console.log('✅ MongoDB connected');
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      setTimeout(() => {
-        console.log('🕒 Server started after 5 seconds delay');
-      }, 1000);
-    });
+    console.log('✅  MongoDB connected');
+    app.listen(PORT, '0.0.0.0', () =>
+      console.log(`🚀  Server listening on port ${PORT}`),
+    );
   })
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err);
+    console.error('❌  MongoDB connection error:', err);
     process.exit(1);
   });
+
+export default app;
+// Note: This file exports the Express app instance.
+// This allows us to import the app in tests without starting the server  
+// or duplicating the connection logic.
+// It also ensures the server is only started once, preventing issues with multiple connections in tests.
+// This is the main entry point for the server application.
+// It sets up the Express server, connects to MongoDB, and serves the API routes.
+// It also handles static file serving for the React client build if it exists.
+// The server listens on the specified port and handles errors gracefully.

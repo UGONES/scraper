@@ -9,8 +9,8 @@ const scrapeSchema = new Schema(
     },
     url: {
       type: String,
-      required: true,
-      trim: true,
+      required: false,
+      default: '',
     },
     title: {
       type: String,

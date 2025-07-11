@@ -1,23 +1,43 @@
+// src/api/axios.js
 import axios from 'axios';
+import { getStoredAuth, clearStoredAuth } from '../utils/authHelpers';
 
-const instance = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api',
-  timeout: 15000, // extended timeout
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api' || 'https://server.onrender.com',
+  withCredentials: true,
+  timeout: 15000,
 });
 
-instance.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// REQUEST INTERCEPTOR: Inject Bearer Token if available
+api.interceptors.request.use(
+  (config) => {
+    const auth = getStoredAuth();
+    if (auth?.token) {
+      config.headers.Authorization = `Bearer ${auth.token}`;
     }
     return config;
   },
-  error => Promise.reject(error)
+  (error) => Promise.reject(error)
 );
 
+// RESPONSE INTERCEPTOR: Handle Unauthorized or Forbidden
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
 
-export default instance;
+    if (status === 401 || status === 403) {
+      console.warn(`[axios] Token rejected (status: ${status}). Clearing auth.`);
+      clearStoredAuth();
+
+      // Optional: Avoid redirect loop if already on sign-in
+      if (!window.location.pathname.includes('/signin')) {
+        window.location.href = '/signin';
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;

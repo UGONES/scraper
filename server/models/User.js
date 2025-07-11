@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true,
     },
     email: {
       type: String,
@@ -35,6 +36,11 @@ const userSchema = new mongoose.Schema(
     bio: {
       type: String,
       default: '',
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other', 'prefer not to say'],
+      default: 'other',
     },
   },
   { timestamps: true }

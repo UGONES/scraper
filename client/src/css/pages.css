@@ -1,11 +1,12 @@
 /* General Page Layout */
+@import 'responsive.css';
 .page-container {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
-  background-color: #fff;
+  background-color: #007bff1a;
 }
 
 /* Headings */
@@ -28,6 +29,7 @@
   background-color: #007bff;
   color: white;
   padding: 0.75rem 1.5rem;
+  width: 100%;
   border: none;
   border-radius: 6px;
   font-size: 1.1rem;
@@ -36,13 +38,13 @@
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+  box-shadow: 0 4px 10px #007bff33;
 }
 
 .page-button:hover {
-  background-color: #7fbcfd;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px #007bff4d;
+  background-color: #1586ff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px #004c9e8e;
 }
 
 /* Cards */

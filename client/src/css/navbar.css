@@ -152,7 +152,7 @@
   position: absolute;
   top: 130%;
   right: 0;
-  background: #1c2735;
+  background: #141e30;
   padding: 0.5rem;
   border-radius: 4px;
   box-shadow: 0 2px 5px #00000033;
@@ -190,3 +190,105 @@
 }
 
 /* Mobile-only dropdown styles */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+        position: absolute;
+        top: 1.2rem;
+        right: 1.5rem;
+        z-index: 1001;
+    }
+
+    .navbar-menu {
+        display: none;
+        width: 100%;
+        background: #141e30;
+        position: absolute;
+        top: 60px;
+        right: 0;
+        padding: 1rem 0;
+        border-radius: 0 0 8px 8px;
+        z-index: 1000;
+    }
+
+    .navbar-menu.show {
+        display: block;
+    }
+
+    .nav-list {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-left: 3rem;
+        gap: 1rem;
+    }
+
+    .auth-buttons.desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: block;
+        text-align: left;
+    }
+
+    .dropdown-menu-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        position: absolute;
+        top: 100%;
+        right: 1.5rem;
+        background: #141e30;
+        padding: 1rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 8px #00000033;
+        z-index: 1000;
+        min-width: 180px;
+    }
+
+    .dropdown-menu-mobile a,
+    .dropdown-menu-mobile button {
+        background: none;
+        border: none;
+        color: white;
+        text-align: left;
+        text-decoration: none;
+        font-size: 1rem;
+        padding: 0.5rem 0;
+        cursor: pointer;
+    }
+
+    .dropdown-menu-mobile a:hover,
+    .dropdown-menu-mobile button:hover {
+        color: #61dafb;
+    }
+
+    .dropdown-logout-btn {
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.6rem;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    .dropdown-logout-btn:hover {
+        background-color: #d43737;
+    }
+}
+
+/* Hide mobile menu items on desktop */
+@media (min-width: 769px) {
+    .mobile-only {
+        display: none;
+    }
+
+    .auth-description {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        margin: 2em;
+    }
+}

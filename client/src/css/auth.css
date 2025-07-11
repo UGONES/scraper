@@ -3,15 +3,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(to right, #ece9e6, #ffffff);
+  background: linear-gradient(to right, #345371, #ffffff);
   padding: 2rem;
 }
 
 .auth-form {
-  background: #fff;
+  background: transparent;
   padding: 2rem 2.5rem;
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px #00000096;
   width: 100%;
   max-width: 400px;
 }
@@ -29,7 +29,7 @@
 .auth-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #555;
+  color: #3b3b3b;
 }
 
 .auth-group input {
@@ -58,7 +58,7 @@
 .auth-btn {
   width: 100%;
   padding: 0.75rem;
-  background-color: #007bff;
+  background: linear-gradient(to right,#ffffff, #345371 );
   border: none;
   border-radius: 6px;
   color: white;
@@ -68,7 +68,7 @@
 }
 
 .auth-btn:hover {
-  background-color: #0056b3;
+  background: linear-gradient(to right,#bec2c8, #243e57 );
 }
 
 .auth-footer {
@@ -78,8 +78,9 @@
 }
 
 .auth-footer a {
-  color: #007bff;
+  color: #6d7884;
   text-decoration: none;
+  opacity: 100000;
 }
 
 .auth-footer a:hover {
@@ -129,4 +130,162 @@
 .auth-container {
   position: relative;
   z-index: 2;
+}
+.scrapes-table {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+.scrapes-table th,
+.scrapes-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.scrapes-table th {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.scrapes-table td {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.manage-users-table {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+.manage-users-table th,
+.manage-users-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.manage-users-table th {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+/* ========== CONTACT SPECIFIC STYLES ========== */
+.auth-description {
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+.message.success {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.form-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* ===== POP-UP MESSAGE STYLES ===== */
+.popup-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.85rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  text-align: center;
+  min-width: 280px;
+  max-width: 90%;
+  animation: slideDownFade 0.4s ease-out;
+}
+
+.popup-message.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.popup-message.success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+@keyframes slideDownFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.auth-form textarea.auth-input {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 120px;
+}
+/* ========== CONTACT FORM RESPONSIVE STYLES ========== */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .auth-form {
+    padding: 1.5rem 1.25rem;
+    box-shadow: 0 6px 16px #00000033;
+  }
+
+  .auth-label {
+    font-size: 0.95rem;
+  }
+
+  .auth-form textarea.auth-input {
+    font-size: 0.95rem;
+    min-height: 100px;
+  }
+
+  .auth-description {
+    font-size: 0.9rem;
+  }
+
+  .btn.btn-primary {
+    font-size: 0.95rem;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .form-error,
+  .message.success {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+  }
 }

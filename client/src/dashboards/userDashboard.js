@@ -1,97 +1,53 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from '../api/axios';
+import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import Sidebar from '../components/Sidebar';
+import DashboardHome from './DashboardHome';
 import '../css/dashboard.css';
 
-const UserDashboard = () => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
+export default function UserDashboardHome() {
+  const { auth } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [error, setError] = useState('');
+      const [myScrapes, setMyScrapes] = useState([]);
+
 
   useEffect(() => {
-    const endpoint = user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+    if (!auth?.token) return;
 
-    axios.get(endpoint, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-    })
-      .then((res) => setUserData(res.data))
-      .catch((err) => {
-        if ([401, 403].includes(err.response?.status)) {
-          logout();
-          navigate('/signin');
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [logout, navigate, user]);
+    const load = async () => {
+      try {
+        const { data } = await api.get('/dashboard/user/summary');
+        setStats(data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load summary');
+      }
+    };
 
-  const getDashboardLink = () => user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
-  const handleLogout = () => {
-    logout();
-    navigate('/signin');
-  };
-  if (loading) return <div className="dashboard-loading">Loading user dashboard...</div>;
-  if (!userData) return <div className="dashboard-access-denied">Access denied.</div>;
-
-  const userInfo = user || {}; // Get from AuthContext
-  const scrapes = userData?.scrapes || [];
+          api.get("/scrape/user") // 👈 user's own scrapes
+      .then(({ data }) => setMyScrapes(data))
+      .catch(err => console.error("Error fetching user's scrapes:", err));
+    load();
+  }, [auth]);
 
   return (
-    <div className="dashboard-container">
-      <aside className="dashboard-sidebar">
-        <h2>User Panel</h2>
-        <nav>
-          <ul>
-            <li className="dashboard-sidebar-item"><Link to={getDashboardLink()}>My Dashboard</Link></li>
-            <li className="dashboard-sidebar-item"><Link to="/dashboard/profile">Profile</Link></li>
-            <li className="dashboard-sidebar-item"><Link to="/dashboard/scrapes">My Scrapes</Link></li>
-            <li className="dashboard-sidebar-item"><button onClick={handleLogout} className="logout-btn">Logout</button></li>
-          </ul>
-        </nav>
-      </aside>
+    <div className="dashboard-wrapper">
+      <Sidebar role={auth?.role} />
+      <main className="page-container">
+        <h1 className="page-header">My Dashboard</h1>
 
-      <main className="dashboard-main">
-        <header className="dashboard-header">
-          <h1>Welcome, {userInfo.username || userInfo.email || 'User'}</h1>
-          <p>Email: {userInfo.email || 'N/A'}</p>
-        </header>
+        {error && <p className="error-message">{error}</p>}
 
-        <section className="dashboard-stats">
-          <div className="stat-card">
-            <h3>Total Scrapes</h3>
-            <p>{scrapes.length}</p>
+        {stats ? (
+          <div className="card inline-card">
+            <p className="card-label">My Total Scrapes</p>
+            <p className="card-value">{myScrapes.length || 0}</p>
+            <DashboardHome />
           </div>
-        </section>
-
-        <section className="dashboard-table">
-          <h2>My Scrape History</h2>
-          {scrapes.length > 0 ? (
-            <table>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scrapes.map((scrape) => (
-                  <tr key={scrape._id}>
-                    <td>{scrape.title}</td>
-                    <td>{new Date(scrape.createdAt).toLocaleDateString()}</td>
-                    <td className={`status ${scrape.status.toLowerCase()}`}>{scrape.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>No scrapes found.</p>
-          )}
-        </section>
+        ) : (
+          <p>Loading…</p>
+        )}
       </main>
     </div>
   );
-};
-
-export default UserDashboard;
+}

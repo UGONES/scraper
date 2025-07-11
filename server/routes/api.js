@@ -13,9 +13,10 @@ const router = express.Router();
 router.use('/auth', authRoutes);
 router.use('/data', dataRoutes);
 router.use('/scrape', scrapeRoutes);
-router.use('/admin', adminDashboardRoutes);
-router.use('/user', userDashboardRoutes);
+router.use('/dashboard/admin', adminDashboardRoutes);
+router.use('/dashboard/user', userDashboardRoutes);
 router.use('/users', userRoutes);
 router.use('/contact', contactRoutes);
 
 export default router;
+// This file serves as the main API router for the server.

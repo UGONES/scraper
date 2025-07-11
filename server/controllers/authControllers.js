@@ -60,23 +60,22 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+    const safeRole = ['admin', 'user'].includes(user.role) ? user.role : 'user';
+    const tokenPayload = {
+      userId: user._id.toString(),  // ✅ Ensure it's a string
+      role: safeRole,
+      email: user.email,
+      username: user.username,
+    };
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '1d' });
+    console.log('Generated token payload:', tokenPayload);
 
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        role: user.role,
-        email: user.email,
-        username: user.username, // ✅ ensure this is included
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
 
     res.json({
       message: 'Login successful',
       token,
       role: user.role,
-      userId: user._id,
+      userId: user._id.toString(), // ✅ Ensure it's a string
       username: user.username,
       email: user.email,
     });
