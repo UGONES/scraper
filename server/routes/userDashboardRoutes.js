@@ -1,29 +1,18 @@
-import express from 'express';
-import multer from 'multer';
-import { verifyToken, isUser } from '../middleware/authMiddleware.js';
-import { updateUserProfile } from '../controllers/userController.js';
+import express from "express";
+import { verifyToken, isUser } from "../middleware/authMiddleware.js";
+import { getUserSummary } from "../controllers/userdController.js";
+import { getOwnScrapes } from "../controllers/scrapeController.js";
+import { getUserProfile, updateUserProfile } from "../controllers/userController.js";
+
 
 const router = express.Router();
 
-// Set up multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => {
-    const ext = file.originalname.split('.').pop();
-    cb(null, `${Date.now()}.${ext}`);
-  }
-});
-const upload = multer({ storage });
-
-// Protect all user routes
 router.use(verifyToken, isUser);
 
-// Routes
-router.get('/dashboard', (req, res) => {
-  res.json({ message: `Welcome to user dashboard, user ID: ${req.user.userId}` });
-});
+router.get("/summary", getUserSummary);
+router.get("/scrapes", getOwnScrapes);
+router.get("/profile", getUserProfile);          // ✅ new
+router.put("/profile", updateUserProfile);       // ✅ new
 
-// ✅ Use multer here to handle avatar
-router.put('/dashboard', upload.single('avatar'), updateUserProfile);
 
 export default router;

@@ -103,6 +103,24 @@ export const getUserById = async (req, res) => {
   }
 };
 
+export const getUserProfile = async (req, res) => {
+  try {
+    const user = req.user; // This comes from verifyToken middleware
+    res.json({
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      fullName: user.fullName || '',
+      bio: user.bio || '',
+      gender: user.gender || '',
+      description: user.description || '',
+      avatar: user.avatar || '',
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get profile' });
+  }
+};
+
 export const updateUserProfile = async (req, res) => {
   try {
     const { username, email, bio, fullName, description, gender } = req.body;

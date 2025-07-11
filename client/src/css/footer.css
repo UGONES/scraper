@@ -2,7 +2,7 @@
 .footer {
   text-align: center;
   padding: 1rem;
-  background: var(--background);
+  background: #bbb !important;
   color: white;
   position: relative;
   bottom: 0;
@@ -21,7 +21,7 @@
 }
 
 .footer-links a {
-  color: #ccc;
+  color: #dfdfdf;
   text-decoration: none;
   font-size: 1rem;
   transition: color 0.3s ease;
@@ -40,7 +40,7 @@
 }
 
 .footer-socials a {
-  color: #bbb;
+  color: #dfdfdf;
   font-size: 1.4rem;
   transition: color 0.3s ease;
 }
@@ -51,7 +51,7 @@
 
 .footer-bottom {
   font-size: 0.9rem;
-  color: #ffffff;
+  color: #fff;
   text-align: center;
 }
 

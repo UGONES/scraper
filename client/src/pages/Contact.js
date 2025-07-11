@@ -1,5 +1,5 @@
 // src/pages/Contact.js (or components/Contact.js if you keep it there)
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import '../css/auth.css';
 import '../css/responsive.css'; // Assuming you have a separate CSS file for contact styling
@@ -12,7 +12,19 @@ export default function Contact() {
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (submitted) setSubmitted(false); // Reset if user edits form after submitting
   };
+  // Add this effect to auto-dismiss messages
+  useEffect(() => {
+    if (formError || successMsg) {
+      const timer = setTimeout(() => {
+        setFormError('');
+        setSuccessMsg('');
+      }, 4000); // 4 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [formError, successMsg]);
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -30,10 +42,22 @@ export default function Contact() {
 
   return (
     <div className="auth-container">
-      <h2 className="auth-title">Contact Us:</h2>
-      <p className="auth-description">We'd love to hear from you! Please fill out the form below.</p>
-      {formError && <div className="form-error">{formError}</div>}
-      {successMsg && <p className="message success">{successMsg}</p>}
+
+      <div className="auth-header">
+        <h2 className="auth-title">Contact Us:</h2>
+        <p className="auth-description">We'd love to hear from you! Please fill out the form below.</p>
+      </div>
+      {formError && (
+        <div className="popup-message error">
+          {formError}
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="popup-message success">
+          {successMsg}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="auth-form" noValidate>
         <label className="auth-label">

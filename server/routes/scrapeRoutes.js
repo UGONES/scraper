@@ -1,43 +1,35 @@
-// routes/scrapeRoutes.js
 import express from 'express';
 import { body } from 'express-validator';
-import { verifyToken } from '../middleware/authMiddleware.js';
-import { validateScrapeInput } from '../middleware/validateMiddleware.js';
 import {
-  scrapeHandler, // ✅ Unified scrape logic for URL + Text
-  getAllScrapes,
-  getScrapeById,
-  updateScrape,
-  deleteScrape
+  createScrape,
+  getOwnScrapes,
+  getAllScrapes
 } from '../controllers/scrapeController.js';
+import { verifyToken, isAdmin, isUser,allowUserOrAdmin } from '../middleware/authMiddleware.js';
+import { validateScrapeInput } from '../middleware/validateMiddleware.js';
 
 const router = express.Router();
 
-// All routes require authentication
+// ✅ All routes require authentication
 router.use(verifyToken);
 
-// ✅ POST /api/scrapes - Accepts either a URL or free-form input
+// ✅ USER: Create a scrape
 router.post(
-  '/',
+  '/user',
+  allowUserOrAdmin,
   [
     body('input')
       .exists().withMessage('Input is required')
       .isString().withMessage('Input must be a string'),
   ],
   validateScrapeInput,
-  scrapeHandler
+  createScrape
 );
 
-// ✅ GET all scrapes for the logged-in user
-router.get('/', getAllScrapes);
+// ✅ USER: Get own scrapes
+router.get('/user', allowUserOrAdmin, getOwnScrapes);
 
-// ✅ GET a single scrape
-router.get('/:id', getScrapeById);
-
-// ✅ PUT: update scrape (title, status, or data)
-router.put('/:id', updateScrape);
-
-// ✅ DELETE a scrape
-router.delete('/:id', deleteScrape);
+// ✅ ADMIN: Get all scrapes (for admin only)
+router.get('/admin', isAdmin, getAllScrapes);
 
 export default router;

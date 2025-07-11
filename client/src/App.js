@@ -1,73 +1,73 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import Navbar from './components/Navbar';
+/*  client/src/App.js  */
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  // Outlet,
+  // useLocation
+} from 'react-router-dom';
+
+import { AuthProvider,
+  //  useAuth
+   } from './context/AuthContext';
+import ProtectedRoute from './routes/ProtectedRoute';
+
 import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
-import AdminDashboard from './dashboards/adminDashboard';
-import UserDashboard from './dashboards/userDashboard';
-import ManageUsers from './pages/Admin/ManageUsers';
-import MyScrapes from './pages/Dashboard/MyScrapes';
-import Profile from './pages/Dashboard/Profile';
-import ProtectedRoute from './ProtectedRoute';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import Footer from './components/Footer';
 import Contact from './pages/Contact';
-import './css/root.css';
-import './css/responsive.css';
-import './App.css';
 
-// This should eventually be replaced with live data
-const data = [
-  { id: '1', title: 'Example Scrape', description: 'This is just a test item.' },
-];
+import DashboardRouter from './routes/DashboardRouter';
+import Profile from './pages/Dashboard/Profile';
+import AdminScrapes from './pages/Dashboard/Admin/AdminScrapes';
+import UserScrapes from './pages/Dashboard/User/UserScapes';
+import UserDashboardHome from './dashboards/userDashboard';
+import AdminDashboardHome from './dashboards/adminDashboard';
+import ManageUsers from './pages/Dashboard/Admin/ManageUsers';
 
-function DashboardRouter() {
-  const { user } = useAuth();
-  if (!user) return null;
-  return user.role === 'admin' ? <AdminDashboard /> : <UserDashboard />;
-}
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 
-function App() {
-  const [query, setQuery] = useState('');
-
+export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Navbar query={query} setQuery={setQuery} items={data} />
+    <Router>
+      <AuthProvider>
+        <Navbar />
+
         <Routes>
+          {/* ── Public routes ── */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/user/dashboard" element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/dashboard/scrapes" element={<MyScrapes />} />
-          <Route path="/dashboard/profile" element={<Profile />} />
+          <Route path="/contact" element={<Contact />} />
 
-          {/* Single protected admin dashboard route with nested users */}
-          <Route path="/admin/dashboard" element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }>
-          </Route>
-          <Route path="/admin/users" element={<ManageUsers />} />
 
+          {/* ── Protected routes ── */}
+          <Route element={<ProtectedRoute />}>
+            {/* layout that adds/removes sidebar as needed */}
+              {/* shared dashboard entry */}
+              <Route path="/dashboard" element={<DashboardRouter />} />
+
+              {/* ADMIN */}
+              <Route path="/dashboard/admin" element={<AdminDashboardHome />} />
+              <Route path="/admin/scrapes" element={<AdminScrapes />} />
+              <Route path="/admin/users" element={<ManageUsers />} />
+              <Route path="/admin/profile" element={<Profile />} />
+
+              {/* USER */}
+              <Route path="/dashboard/user" element={<UserDashboardHome />} />
+              <Route path="/user/scrapes" element={<UserScrapes />} />
+              <Route path="/user/profile" element={<Profile />} />
+            </Route>
         </Routes>
+
         <Footer />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 }
-
-export default App;

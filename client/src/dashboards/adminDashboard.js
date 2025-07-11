@@ -1,119 +1,54 @@
-import { useEffect, useState } from 'react';
-import axios from '../api/axios';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import '../css/dashboard.css';
+import { useEffect, useState } from "react";
+import api from "../api/axios";
+import Sidebar from "../components/Sidebar";
+import { useAuth } from "../context/AuthContext";
+import "../css/dashboard.css";
+import DashboardHome from "./DashboardHome";
 
-const AdminDashboard = () => {
-  const [dashboardData, setDashboardData] = useState(null);
+const Card = ({ title, value }) => (
+  <div className="card">
+    <p className="card-label">{title}</p>
+    <p className="card-value">{value}</p>
+  </div>
+);
+
+const AdminDashboardHome = () => {
+  const { auth } = useAuth();
+  const [stats, setStats] = useState({ totalUsers: 0, totalScrapes: 0 });
   const [loading, setLoading] = useState(true);
-  const { token, user, logout } = useAuth();
-  const navigate = useNavigate();
+    const [myScrapes, setMyScrapes] = useState([]);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const res = await axios.get('/admin/dashboard', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setDashboardData(res.data);
-      } catch (err) {
-        console.error('Admin fetch error:', err.response?.data || err.message);
-        if ([401, 403].includes(err.response?.status)) {
-          logout();
-          navigate('/signin');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+    api.get("/dashboard/admin/summary")
+      .then(({ data }) => setStats(data))
+      .finally(() => setLoading(false));
 
-    fetchDashboardData();
-  }, [token, logout, navigate]);
-
-  const users = dashboardData?.users || [];
-  const scrapes = dashboardData?.scrapes || [];
-  const userCount = dashboardData?.userCount || users.length;
-  const adminEmail = dashboardData?.admin || user?.email || 'N/A';
-  const getDashboardLink = () => '/admin/dashboard';
-  const handleLogout = () => {
-    logout();
-    navigate('/signin');
-  };
-  if (loading) return <div className="dashboard-loading">Loading admin dashboard...</div>;
-  if (!dashboardData) return <div className="dashboard-access-denied">Access denied.</div>;
+      api.get("/scrape/user") // 👈 Admin's own scrapes
+      .then(({ data }) => setMyScrapes(data))
+      .catch(err => console.error("Error fetching admin scrapes:", err));
+  }, []);
 
   return (
-    <div className="dashboard-container">
-      <aside className="dashboard-sidebar">
-        <h2>{user?.role === 'admin' ? 'Admin Panel' : 'User Panel'}</h2>
-        <nav>
-          <ul>
-            <li className="dashboard-sidebar-item">
-              <Link to={getDashboardLink()}>My Dashboard</Link>
-            </li>
-            {user?.role === 'admin' && (
-              <li className="dashboard-sidebar-item">
-                <Link to="/admin/users">Manage Users</Link>
-              </li>
-            )}
-            <li className="dashboard-sidebar-item">
-              <Link to="/dashboard/profile">Profile</Link>
-            </li>
-            <li className="dashboard-sidebar-item">
-              <Link to="/dashboard/scrapes">My Scrapes</Link>
-            </li>
-            <li className="dashboard-sidebar-item">
-              <button onClick={handleLogout} className="logout-btn">Logout</button>
-            </li>
-          </ul>
-
-        </nav>
-      </aside>
-
-
-      <main className="dashboard-main">
-        <header className="dashboard-header">
-          <h1>Welcome, {user?.username || 'Admin'}</h1>
-          <p>Email: {adminEmail}</p>
-          <p>Total Users:{dashboardData?.userCount || users.length}</p>
-        </header>
-
-        <section className="dashboard-stats">
-          <div className="stat-card">
-            <h3>Total Scrapes</h3>
-            <p>{scrapes.length}</p>
-          </div>
-        </section>
-
-        <section className="dashboard-table">
-          <h2>Scrape History</h2>
-          {scrapes.length > 0 ? (
-            <table>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scrapes.map((scrape) => (
-                  <tr key={scrape._id}>
-                    <td>{scrape.title}</td>
-                    <td>{new Date(scrape.createdAt).toLocaleDateString()}</td>
-                    <td className={`status ${scrape.status.toLowerCase()}`}>{scrape.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>No scrapes found.</p>
-          )}
-        </section>
+    <div className="dashboard-wrapper">
+      <Sidebar role={auth?.role} />
+      <main className="page-container">
+        <h1 className="page-header">Admin Dashboard</h1>
+        {loading ? (
+          <p>Loading…</p>
+        ) : (
+          <><div className="card-grid">
+              <Card title="Total Users" value={stats.totalUsers} />
+              <Card title="Total Scrapes" value={stats.totalScrapes} />
+              <Card title="My Scrapes" value={myScrapes.length || 0} />
+            </div>
+            <div className="card inline-card">
+              <DashboardHome />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default AdminDashboardHome;
