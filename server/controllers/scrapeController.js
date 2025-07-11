@@ -25,7 +25,7 @@ ${input}
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-goog-api-key': process.env.GEMINI_API_KEY,
+        'X-goog-api-key': process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY1, // ✅ Use the first available key
       },
       body: JSON.stringify({
         contents: [
