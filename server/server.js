@@ -45,8 +45,13 @@ const app = express();
 const uploadsDir = path.join(__dirname, 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
 
+const allowedOrigins = [
+  'https://scraper-data.onrender.com', // ✅ Your frontend on Render
+  'http://localhost:3000',             // ✅ For local dev
+];
+
 app.use(cors({
-  origin: (process.env.CLIENT_ORIGIN ?? 'http://localhost:3000').split(','),
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
