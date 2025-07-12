@@ -11,6 +11,8 @@ const AdminScrapes = () => {
   const [allUserScrapes, setAllUserScrapes] = useState([]);
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [successMsg, setSuccessMsg] = useState('');
   const [selectedScrape, setSelectedScrape] = useState(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -34,7 +36,7 @@ const AdminScrapes = () => {
   const handleScrape = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await api.post('/scrape/user', { input });
+      const { data } = await api.post('/scrape/user', { input }).finally(() => setLoading(false));
       setAdminScrapes([data, ...adminScrapes]);
       setSelectedScrape(data);
       setInput('');
@@ -42,6 +44,10 @@ const AdminScrapes = () => {
     } catch (err) {
       const msg = err.response?.data?.message || 'Scrape failed';
       setError(msg);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setSuccessMsg('Scrape successful!');
+      setTimeout(() => setSuccessMsg(''), 5000);
     }
   };
 
@@ -101,104 +107,118 @@ const AdminScrapes = () => {
         </div>
       )}
 
-      <main className="page-container">
+      <main className="page-container dashboard-page">
         <h1 className="page-header">Admin Scrapes</h1>
 
         {/* General Scrapes Toggle Section */}
-        <div className="user-list">
-          <button
-            className="user-button general-toggle"
-            onClick={() => setShowUserList(!showUserList)}
-          >
-            📁 General Scrapes ({sortedUsernames.length})
-            {showUserList ? <FiChevronUp style={{ marginLeft: '0.5rem' }} /> : <FiChevronDown style={{ marginLeft: '0.5rem' }} />}
-          </button>
-
-          {showUserList && (
-            <div className="user-button-list">
-              {sortedUsernames.map((username) => (
-                <button
-                  key={username}
-                  className="user-button"
-                  onClick={() => {
-                    setSelectedUser({ name: username, scrapes: groupedByUser[username] });
-                    setShowOverlay(true);
-                    setShowUserList(false); // auto-close dropdown
-                  }}
-                >
-                  {username} ({groupedByUser[username].length})
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <form onSubmit={handleScrape} className="scrape-form">
-          {error && <p className="text-red-600">{error}</p>}
-          <textarea
-            rows={4}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter a URL or topic to scrape as admin..."
-            required
-          />
-          <button type="submit" className="scrape-btn">Scrape</button>
-        </form>
-
-        {selectedScrape && (
-          <div className="scrape-display">
-            <h2 className="scrape-source">{selectedScrape.source}</h2>
-            <p className="scrape-result">{selectedScrape.result.slice(0, 100)}...</p>
-
+        {loading ? (<p>Loading Admin Scrapes ...</p>) : (<>
+          <div className="user-list">
             <button
-              className="analysis-btn"
-              onClick={() => setShowAnalysis(!showAnalysis)}
+              className="user-button general-toggle"
+              onClick={() => setShowUserList(!showUserList)}
             >
-              {showAnalysis ? 'Hide Analysis' : 'Show Analysis'}
+              📁 General Scrapes ({sortedUsernames.length})
+              {showUserList ? <FiChevronUp style={{ marginLeft: '0.5rem' }} /> : <FiChevronDown style={{ marginLeft: '0.5rem' }} />}
             </button>
 
-            {showAnalysis && (
-              <div className="scrape-analysis">
-                <pre>{selectedScrape.result}</pre>
+            {showUserList && (
+              <div className="user-button-list">
+                {sortedUsernames.map((username) => (
+                  <button
+                    key={username}
+                    className="user-button"
+                    onClick={() => {
+                      setSelectedUser({ name: username, scrapes: groupedByUser[username] });
+                      setShowOverlay(true);
+                      setShowUserList(false); // auto-close dropdown
+                    }}
+                  >
+                    {username} ({groupedByUser[username].length})
+                  </button>
+                ))}
               </div>
             )}
           </div>
-        )}
 
-        {showOverlay && selectedUser && (
-          <div className="overlay" onClick={() => setShowOverlay(false)}>
-            <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
-              <h2>{selectedUser.name}'s Scrapes</h2>
-              <div className="scrape-table">
-                {selectedUser.scrapes.map((scrape) => (
-                  <div key={scrape._id} className="scrape-entry">
-                    <div className="scrape-header">
-                      <strong>{scrape.source.slice(0, 60)}</strong>
-                      <small>{formatDate(scrape.createdAt)}</small>
-                    </div>
-                    <p>{scrape.result.slice(0, 100)}...</p>
+          <form onSubmit={handleScrape} className="scrape-form">
+            {error && (
+              <div className="popup-error">
+                {error}
+                <button className="close-btn" onClick={() => setError('')}>×</button>
+              </div>
+            )}
+            <textarea
+              rows={4}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Enter a URL or topic to scrape as admin..."
+              required
+            />
+             {successMsg && (
+              <div className="popup-success">
+                {successMsg}
+                <button className="close-btn" onClick={() => setSuccessMsg('')}>×</button>
+              </div>
+            )}
+            <button type="submit" className="scrape-btn">Scrape</button>
+          </form>
 
-                    <button
-                      className="analysis-btn"
-                      onClick={() =>
-                        setExpandedScrape(
-                          expandedScrape === scrape._id ? null : scrape._id
-                        )
-                      }
-                    >
-                      {expandedScrape === scrape._id ? 'Hide Analysis' : 'Show Analysis'}
-                    </button>
+          {selectedScrape && (
+            <div className="scrape-display">
+              <h2 className="scrape-source">{selectedScrape.source}</h2>
+              <p className="scrape-result">{selectedScrape.result.slice(0, 100)}...</p>
 
-                    {expandedScrape === scrape._id && (
-                      <div className="scrape-analysis">
-                        <p>{scrape.result}</p>
+              <button
+                className="analysis-btn"
+                onClick={() => setShowAnalysis(!showAnalysis)}
+              >
+                {showAnalysis ? 'Hide Analysis' : 'Show Analysis'}
+              </button>
+
+              {showAnalysis && (
+                <div className="scrape-analysis">
+                  <pre>{selectedScrape.result}</pre>
+                </div>
+              )}
+            </div>
+          )}
+
+          {showOverlay && selectedUser && (
+            <div className="overlay" onClick={() => setShowOverlay(false)}>
+              <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
+                <h2>{selectedUser.name}'s Scrapes</h2>
+                <div className="scrape-table">
+                  {selectedUser.scrapes.map((scrape) => (
+                    <div key={scrape._id} className="scrape-entry">
+                      <div className="scrape-header">
+                        <strong>{scrape.source.slice(0, 60)}</strong>
+                        <small>{formatDate(scrape.createdAt)}</small>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      <p>{scrape.result.slice(0, 100)}...</p>
+
+                      <button
+                        className="analysis-btn"
+                        onClick={() =>
+                          setExpandedScrape(
+                            expandedScrape === scrape._id ? null : scrape._id
+                          )
+                        }
+                      >
+                        {expandedScrape === scrape._id ? 'Hide Analysis' : 'Show Analysis'}
+                      </button>
+
+                      {expandedScrape === scrape._id && (
+                        <div className="scrape-analysis">
+                          <p>{scrape.result}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+        </>
         )}
       </main>
     </div>

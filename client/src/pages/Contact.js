@@ -30,6 +30,7 @@ export default function Contact() {
     e.preventDefault();
     setFormError('');
     setSuccessMsg('');
+    setTimeout(() => setSubmitted(false), 5000); // Reset submitted state after 5 seconds
     try {
       const res = await axios.post('/contact', form);
       setSuccessMsg(res.data.message || 'Thanks for reaching out! We\'ll get back to you soon.');

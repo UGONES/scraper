@@ -29,7 +29,7 @@ const ManageUsers = () => {
   return (
     <div className="dashboard-wrapper">
       <Sidebar role={auth?.role} />
-      <main className="page-container">
+      <main className="page-container dashboard-page">
         <h1 className="page-header">Manage Users</h1>
         {loading ? (
           <p>Loading…</p>

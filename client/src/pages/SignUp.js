@@ -26,13 +26,18 @@ const SignUp = () => {
       navigate('/signin');
     } catch (err) {
       setFormError(err.response?.data?.message || 'Signup failed');
+      setTimeout(() => setFormError(''), 5000);
     }
   };
 
   return (
     <div className="auth-container">
-      {formError && <div className="form-error">{formError}</div>}
-      <form onSubmit={handleSubmit} className="auth-form">
+      {formError && (
+        <div className="popup-error">
+          {formError}
+          <button className="close-btn" onClick={() => setFormError('')}>×</button>
+        </div>
+      )}      <form onSubmit={handleSubmit} className="auth-form">
         <h2>Sign Up</h2>
 
         <div className="auth-group">

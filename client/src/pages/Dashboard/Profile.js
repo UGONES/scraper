@@ -33,6 +33,8 @@ const Select = ({ label, name, value, onChange, options }) => (
 const Profile = () => {
   const { auth } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [formError, setFormError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [form, setForm] = useState({
     fullName: "",
     bio: "",
@@ -41,6 +43,7 @@ const Profile = () => {
   });
   const [avatar, setAvatar] = useState(null);
   const [editing, setEditing] = useState(false);
+
 
   const profileUrl = auth?.role === 'admin'
     ? '/dashboard/admin/profile'
@@ -61,33 +64,49 @@ const Profile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const fd = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
-      fd.append(key, value);
-    });
-    if (avatar) {
-      fd.append("avatar", avatar);
-    }
-
-    api
-      .put(profileUrl, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-      .then(({ data }) => {
-        setProfile(data);
-        setEditing(false);
-        setAvatar(null);
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        fd.append(key, value);
       });
+      if (avatar) {
+        fd.append("avatar", avatar);
+      }
+
+      api
+        .put(profileUrl, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+        .then(({ data }) => {
+          setProfile(data);
+          setEditing(false);
+          setAvatar(null);
+        });
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to update profile' || 'An error occurred' || 'Please try again later';
+      setFormError(msg);
+      setTimeout(() => setFormError(''), 5000);
+    } finally {
+      setSuccessMsg('Profile updated successfully!');
+      setTimeout(() => setSuccessMsg(''), 5000);
+    }
+   
   };
 
   return (
     <div className="dashboard-wrapper">
       <Sidebar role={auth?.role} />
-      <main className="profile-container">
+      <main className="page-container dashboard-page">
         <h1 className="form-label mb-3">Profile</h1>
 
         {profile && !editing ? (
           <div className="profile-card">
+            {formError && (
+              <div className="popup-error">
+                {formError}
+                <button className="close-btn" onClick={() => setFormError('')}>×</button>
+              </div>
+            )}
             {profile.avatar ? (
               <img src={profile.avatar} alt="Profile" className="profile-avatar" />
             ) : (
@@ -110,22 +129,26 @@ const Profile = () => {
             className="profile-form profile-card"
             encType="multipart/form-data"
           >
+            {successMsg && (
+              <div className="popup-success">
+                {successMsg}
+                <button className="close-btn" onClick={() => setSuccessMsg('')}>×</button>
+              </div>
+            )}
             <div className="upload-label">
               {avatar ? (
                 <img src={URL.createObjectURL(avatar)} alt="Preview" className="profile-avatar" />
               ) : profile?.avatar ? (
                 <img src={profile.avatar} alt="Profile" className="profile-avatar" />
               ) : (
-                <div className="profile-avatar fallback">No Avatar</div>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFile}
+                  className="form-control"
+                />
               )}
-
               <span className="form-label">Upload Avatar</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFile}
-                className="form-control"
-              />
             </div>
 
             <Input
@@ -146,11 +169,11 @@ const Profile = () => {
               value={form.gender}
               onChange={handleChange}
               options={[
-                { value: "", label: "Select" },
-                { value: "male", label: "Male" },
-                { value: "female", label: "Female" },
-                { value: "non-binary", label: "Non-binary" },
-                { value: "prefer-not-to-say", label: "Prefer not to say" },
+                { value: "", className: "gender-opt", label: "Select" },
+                { value: "male", className: "gender-opt", label: "Male" },
+                { value: "female", className: "gender-opt", label: "Female" },
+                { value: "non-binary", className: "gender-opt", label: "Non-binary" },
+                { value: "prefer-not-to-say", className: "gender-opt", label: "Prefer not to say" },
               ]}
             />
             <Input

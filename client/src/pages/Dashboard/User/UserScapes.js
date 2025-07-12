@@ -9,6 +9,8 @@ const UserScrapes = () => {
   const { auth } = useAuth();
   const [scrapes, setScrapes] = useState([]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [successMsg, setSuccessMsg] = useState('');
   const [error, setError] = useState('');
   const [selectedScrape, setSelectedScrape] = useState(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -17,7 +19,7 @@ const UserScrapes = () => {
   const handleScrape = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await api.post('/scrape/user', { input });
+      const { data } = await api.post('/scrape/user', { input }).finally(() => setLoading(false));
       setScrapes([data, ...scrapes]);
       setSelectedScrape(data);
       setInput('');
@@ -25,6 +27,10 @@ const UserScrapes = () => {
     } catch (err) {
       const msg = err.response?.data?.message || 'Scrape failed';
       setError(msg);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setSuccessMsg('Scrape successful!');
+      setTimeout(() => setSuccessMsg(''), 5000);
     }
   };
 
@@ -39,6 +45,7 @@ const UserScrapes = () => {
       weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
     });
   };
+
 
   return (
     <div className="dashboard-wrapper">
@@ -84,40 +91,55 @@ const UserScrapes = () => {
         </div>
       )}
 
-      <main className="page-container">
+      <main className="page-container dashboard-page">
         <h1 className="page-header">My Scrapes</h1>
+        {loading ? (<p>Loading User Scrapes ...</p>) : (
+          <>
+            <form onSubmit={handleScrape} className="scrape-form">
+              {error && (
+                <div className="popup-error">
+                  {error}
+                  <button className="close-btn" onClick={() => setError('')}>×</button>
+                </div>
+              )}
+              <textarea
+                rows={4}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Enter a URL or some text to scrape..."
+                required
+              />
+              {successMsg && (
+                <div className="popup-success">
+                  {successMsg}
+                  <button className="close-btn" onClick={() => setSuccessMsg('')}>×</button>
+                </div>
+              )}
+              <button type="submit" className="scrape-btn">Scrape</button>
+            </form>
 
-        <form onSubmit={handleScrape} className="scrape-form">
-          {error && <p className="text-red-600">{error}</p>}
-          <textarea
-            rows={4}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter a URL or some text to scrape..."
-            required
-          />
-          <button type="submit" className="scrape-btn">Scrape</button>
-        </form>
+            {selectedScrape && (
+              <div className="scrape-display">
+                <h2 className="scrape-source">{selectedScrape.source}</h2>
+                <p className="scrape-result">{selectedScrape.result.slice(0, 100)}...</p>
 
-        {selectedScrape && (
-          <div className="scrape-display">
-            <h2 className="scrape-source">{selectedScrape.source}</h2>
-            <p className="scrape-result">{selectedScrape.result.slice(0, 100)}...</p>
+                <button
+                  className="analysis-btn"
+                  onClick={() => setShowAnalysis(!showAnalysis)}
+                >
+                  {showAnalysis ? 'Hide Analysis' : 'Show Analysis'}
+                </button>
 
-            <button
-              className="analysis-btn"
-              onClick={() => setShowAnalysis(!showAnalysis)}
-            >
-              {showAnalysis ? 'Hide Analysis' : 'Show Analysis'}
-            </button>
-
-            {showAnalysis && (
-              <div className="scrape-analysis">
-                <pre className="analysis">{selectedScrape.result}</pre>
+                {showAnalysis && (
+                  <div className="scrape-analysis">
+                    <pre className="analysis">{selectedScrape.result}</pre>
+                  </div>
+                )}
               </div>
             )}
-          </div>
+          </>
         )}
+
       </main>
     </div>
   );

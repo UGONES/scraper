@@ -26,7 +26,9 @@ const SignIn = () => {
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed';
       setFormError(msg);
+      setTimeout(() => setFormError(''), 5000);
     }
+
   };
 
 
@@ -37,8 +39,12 @@ const SignIn = () => {
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Sign In</h2>
 
-        {formError && <div className="form-error">{formError}</div>}
-
+        {formError && (
+          <div className="popup-error">
+            {formError}
+            <button className="close-btn" onClick={() => setFormError('')}>×</button>
+          </div>
+        )}
         <div className="auth-group">
           <label htmlFor="email">Email</label>
           <input
