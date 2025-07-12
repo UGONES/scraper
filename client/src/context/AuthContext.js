@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }) => {
         clearStoredAuth();
       }
     }
+    console.log('[DEBUG] ProtectedRoute auth:', auth);
     return null;
   });
 
@@ -59,6 +60,7 @@ export const AuthProvider = ({ children }) => {
         username: decoded.username,
         userId: decoded.userId || decoded.id,
       };
+    console.log('[DEBUG] Auth login:', cleanAuth);
 
       setAuth(cleanAuth);
       setStoredAuth(cleanAuth);
@@ -91,6 +93,7 @@ export const AuthProvider = ({ children }) => {
       clearStoredAuth();
     }
   }, [auth, logout]);
+    console.warn('[DEBUG] No valid token. Redirecting to /signin');
 
   // ✅ Fixes React warning: include login/logout in useMemo
   const value = useMemo(() => ({ auth, login, logout }), [auth, login, logout]);

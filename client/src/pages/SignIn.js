@@ -14,28 +14,29 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
+    console.log('[DEBUG] Submitting login with:', { email, password });
 
     try {
       const { data } = await axios.post('/auth/login', { email, password });
-      /* data = { token, role, username, userId, email } */
+
+      console.log('[DEBUG] Response data:', data);
+
       if (!data?.token) {
         return setFormError('Login failed: Invalid response from server');
       }
-      login(data);               // ✅ ONE correct call
-      navigate('/dashboard');    // ✅ let DashboardRouter decide user/admin
+
+      login(data);               // ✅ Context-based login
+      navigate('/dashboard');    // ✅ Let DashboardRouter route by role
     } catch (err) {
+      console.error('[DEBUG] Login error response:', err.response?.data || err.message);
       const msg = err.response?.data?.message || 'Login failed';
       setFormError(msg);
       setTimeout(() => setFormError(''), 5000);
     }
-
   };
-
 
   return (
     <div className="auth-container">
-      {/* Your carousel code stays unchanged */}
-
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Sign In</h2>
 
@@ -45,6 +46,7 @@ const SignIn = () => {
             <button className="close-btn" onClick={() => setFormError('')}>×</button>
           </div>
         )}
+
         <div className="auth-group">
           <label htmlFor="email">Email</label>
           <input

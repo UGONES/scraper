@@ -69,7 +69,9 @@ if (fs.existsSync(clientBuild)) {
     res.sendFile(path.join(clientBuild, 'index.html'));
   });
 }
-
+console.log('[DEBUG] JWT_SECRET exists:', !!process.env.JWT_SECRET);
+console.log('[DEBUG] MONGO_URI exists:', !!process.env.MONGO_URI);
+// Fallback for non-API routes
 // 404 for unknown API routes
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api')) {

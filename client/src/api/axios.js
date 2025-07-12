@@ -7,18 +7,21 @@ const api = axios.create({
   withCredentials: true,
   timeout: 15000,
 });
+console.log('[DEBUG] Axios base URL:', api.defaults.baseURL);
 
 // REQUEST INTERCEPTOR: Inject Bearer Token if available
 api.interceptors.request.use(
   (config) => {
     const auth = getStoredAuth();
     if (auth?.token) {
+      console.log('[DEBUG] Attaching token to headers:', auth.token);
       config.headers.Authorization = `Bearer ${auth.token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 // RESPONSE INTERCEPTOR: Handle Unauthorized or Forbidden
 api.interceptors.response.use(
