@@ -119,6 +119,37 @@
 .profile-card strong {
   color: #1f2937; /* Tailwind gray-800 */
 }
+/* profile.css or dashboard.css */
+
+select.form-control {
+  padding: 0.5rem;
+  border-radius: 8px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  color: #333;
+  appearance: none; /* remove default arrow for custom styling */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg fill="%23666" height="24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.7rem top 50%;
+  background-size: 1rem;
+}
+
+/* Optional: add hover/focus effect */
+select.form-control:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px #4a90e233;
+}
+
+/* Not widely supported, but for completeness */
+option.gender-opt {
+  font-size: 1rem;
+  padding: 10px;
+  background-color: #fff;
+  color: #333;
+}
+
 
 /* ========== RESPONSIVENESS ========== */
 @media (max-width: 768px) {

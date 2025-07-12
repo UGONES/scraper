@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../css/navbar.css';
@@ -9,19 +9,32 @@ const Navbar = ({ query, setQuery, items = [] }) => {
   const { auth } = useAuth();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const dropdownRef = useRef(null);
+  const hamburgerRef = useRef(null);
   const token = auth?.token;
   const user = auth;
-
   const toggleMenu = () => setMenuOpen(!menuOpen);
-
   const filtered = items.filter(item =>
     item.title?.toLowerCase().includes(query.toLowerCase())
   );
-
   const getDashboardLink = () =>
     user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/user';
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const clickedInsideDropdown = dropdownRef.current && dropdownRef.current.contains(event.target);
+      const clickedHamburger = hamburgerRef.current && hamburgerRef.current.contains(event.target);
 
+      if (!clickedInsideDropdown && !clickedHamburger) {
+        setMenuOpen(false); // Only close if not clicking dropdown or hamburger
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
   const isOnDashboard =
     location.pathname.includes('/dashboard') || location.pathname.includes('/admin');
 
@@ -32,11 +45,11 @@ const Navbar = ({ query, setQuery, items = [] }) => {
           <Link to="/" className="navbar-logo">DataScraper</Link>
         </div>
 
-        <button className="hamburger" onClick={toggleMenu}>
+        <button ref={hamburgerRef} className="hamburger" onClick={toggleMenu}>
           <i className="fas fa-bars"></i>
         </button>
 
-        <div className={`navbar-menu ${menuOpen ? 'show' : ''}`}>
+        <div ref={dropdownRef} className={`navbar-menu ${menuOpen ? 'show' : ''}`}>
           <ul className="nav-list">
             <li className="nav-item"><Link to="/" onClick={() => setMenuOpen(false)}>Home</Link></li>
             <li className="nav-item"><Link to="/about" onClick={() => setMenuOpen(false)}>About</Link></li>

@@ -9,7 +9,7 @@ export default function UserDashboardHome() {
   const { auth } = useAuth();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
-      const [myScrapes, setMyScrapes] = useState([]);
+  const [myScrapes, setMyScrapes] = useState([]);
 
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function UserDashboardHome() {
       }
     };
 
-          api.get("/scrape/user") // 👈 user's own scrapes
+    api.get("/scrape/user") // 👈 user's own scrapes
       .then(({ data }) => setMyScrapes(data))
       .catch(err => console.error("Error fetching user's scrapes:", err));
     load();
@@ -33,11 +33,15 @@ export default function UserDashboardHome() {
   return (
     <div className="dashboard-wrapper">
       <Sidebar role={auth?.role} />
-      <main className="page-container">
+      <main className="page-container dashboard-page">
         <h1 className="page-header">My Dashboard</h1>
 
-        {error && <p className="error-message">{error}</p>}
-
+        {error && (
+          <div className="popup-error">
+            {error}
+            <button className="close-btn" onClick={() => setError('')}>×</button>
+          </div>
+        )}
         {stats ? (
           <div className="card inline-card">
             <p className="card-label">My Total Scrapes</p>

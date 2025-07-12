@@ -2,34 +2,33 @@
 
 
 @media (min-width: 600px) {
-  
-
   .footer {
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
     text-align: left;
-    }
+  }
 
-    .footer-logo {
-        position: relative;
-        text-align: left;
-    }
+  .footer-logo {
+    position: relative;
+    text-align: left;
+  }
 
-    .footer-links {
-        flex-direction: column;
-        text-align: left;
-        gap: 20px;
-        margin-bottom: 0;
-        margin-left: 8rem;
-    }
+  .footer-links {
+    flex-direction: column;
+    text-align: left;
+    gap: 20px;
+    margin-bottom: 0;
+    margin-left: 8rem;
+  }
 
-    .footer-socials {
-        margin-bottom: 0;
-        flex-direction: in;
-        
-    }
+  .footer-socials {
+    margin-bottom: 0;
+    flex-direction: in;
+
+  }
 }
+
 @media (max-width: 992px) {
   .profile-container {
     padding: 1rem 2rem;

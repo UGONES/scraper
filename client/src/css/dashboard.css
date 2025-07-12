@@ -3,7 +3,7 @@
   display: flex;
 }
 
-.page-container {
+.page-container.dashboard-page  {
   flex: 1;
   padding: 2rem;
   background-color: var(--bg-light);
