@@ -70,9 +70,10 @@ app.use('/api', apiRoutes);
 const clientBuild = path.resolve(__dirname, '../client/build');
 if (fs.existsSync(clientBuild)) {
   app.use(express.static(clientBuild));
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(clientBuild, 'index.html'));
-  });
+  app.get('*', (req, res) => {
+  res.sendFile(path.join(clientBuild, 'index.html'));
+});
+
 }
 console.log('[DEBUG] JWT_SECRET exists:', !!process.env.JWT_SECRET);
 console.log('[DEBUG] MONGO_URI exists:', !!process.env.MONGO_URI);
